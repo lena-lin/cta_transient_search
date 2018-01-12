@@ -31,15 +31,15 @@ def simulate_steady_source_with_transient(
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
 
-    flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)),  transient_template[:, 1])
+    flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)),  transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
 
     # N_transient_max = 2*N_steady_source                                         # Random number for transient sample!!!
     # transient_scale = (N_transient_max*signal.gaussian(num_slices, std=5)).astype(int)  # arbitrary value for std!!
 
     slices = []
-    print('Simulate transient')
-    for i in tqdm(range(num_slices)):
+    # print('Simulate transient')
+    for i in range(num_slices):
         folded_events_crab = performance.response(time_per_slice, N_steady_source, E_min, E_max, df_A_eff, sim_area)
         ang_res_steady_source = performance.interp_ang_res(folded_events_crab, df_Ang_Res)
         RA_crab, DEC_crab = performance.sample_positions_steady_source(x_pos_steady_source, y_pos_steady_source, ang_res_steady_source)
@@ -53,9 +53,9 @@ def simulate_steady_source_with_transient(
         RA = np.concatenate([RA_bg, RA_tr, RA_crab])
         DEC = np.concatenate([DEC_bg, DEC_tr, DEC_crab])
 
-        slices.append(np.histogram2d(RA, DEC, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
+        slices = np.append(slices, np.histogram2d(RA, DEC, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
 
-    return np.array(slices), transient_scale
+    return np.array(slices).reshape([-1, bins[0], bins[1]]), transient_scale
 
 
 def simulate_steady_source(
@@ -81,8 +81,8 @@ def simulate_steady_source(
     n_events = 0
     # print(N_background_cta, N_steady_source)
     slices = []
-    print('Simulate steady source')
-    for i in tqdm(range(num_slices)):
+    # print('Simulate steady source')
+    for i in range(num_slices):
         folded_events_crab = performance.response(time_per_slice, N_steady_source, E_min, E_max, df_A_eff, sim_area)
         ang_res_steady_source = performance.interp_ang_res(folded_events_crab, df_Ang_Res)
 
@@ -100,13 +100,10 @@ def simulate_steady_source(
 def remove_steady_background(
             cube_with_transient,
             n_bg_slices,
-            gap,
-            bins
+            gap
         ):
-    print("Remove background")
-    # slices = np.empty([len(cube_with_transient), bins[0], bins[1]])
     slices = []
-    for i in tqdm(range(n_bg_slices+gap, len(cube_with_transient))):
+    for i in range(n_bg_slices+gap, len(cube_with_transient)):
         slices.append(cube_with_transient[i] - cube_with_transient[(i - gap - n_bg_slices):(i-gap)].mean(axis=0))
 
     return slices
