@@ -193,6 +193,18 @@ def main(
     cube_table['num_slices'] = 3*num_slices
     cube_table['num_flare_slices'] = num_slices
 
+    cube_table.meta['n_transient'] = n_transient
+    cube_table.meta['num_slices'] = 3*num_slices
+    cube_table.meta['template'] = transient_template_index
+    cube_table.meta['time_per_slice'] = time_per_slice
+    cube_table.meta['bins'] = bins_
+
+    trans_table.meta['n_transient'] = n_transient
+    trans_table.meta['num_slices'] = 3*num_slices
+    trans_table.meta['template'] = transient_template_index
+    trans_table.meta['time_per_slice'] = time_per_slice
+    trans_table.meta['bins'] = bins_
+
     cube_table.write('{}/n{}_s{}_t{}_cube.hdf5'.format(path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
     trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
 
