@@ -30,7 +30,7 @@ astropy tables:
 
 @click.command()
 @click.argument(
-    'path',
+    'output_path',
     type=click.Path(dir_okay=True)
 )
 @click.option(
@@ -70,7 +70,7 @@ astropy tables:
 )
 
 def main(
-    path,
+    output_path,
     n_transient,
     transient_template_index,
     time_per_slice,
@@ -205,8 +205,8 @@ def main(
     trans_table.meta['time_per_slice'] = time_per_slice
     trans_table.meta['bins'] = bins_
 
-    cube_table.write('{}/n{}_s{}_t{}_cube.hdf5'.format(path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
-    trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
+    cube_table.write('{}/n{}_s{}_t{}_cube.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
+    trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
 
 
 if __name__ == '__main__':

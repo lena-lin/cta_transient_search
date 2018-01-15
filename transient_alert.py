@@ -49,7 +49,13 @@ def send_alert(table, threshold):
 
 @click.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False))
-@click.argument('output_file', type=click.Path(file_okay=True, dir_okay=False))
+@click.option(
+    'output_path',
+    '--output_path',
+    type=click.Path(dir_okay=True),
+    help='Directory for output file (astropy table)',
+    default='build'
+)
 @click.option(
     '--threshold',
     '-th',
@@ -59,18 +65,25 @@ def send_alert(table, threshold):
 
 def main(
     input_file,
-    output_file,
+    output_path,
     threshold
 ):
     timeseries_table = get_smoothed_table(input_file)
     trigger_index, found_trigger, first_trigger = send_alert(timeseries_table, threshold)
+
+    n_transient = timeseries_table.meta['n_transient']
+    num_slices = timeseries_table.meta['num_slices']
+    transient_template_index = timeseries_table.meta['template']
 
     alert_table = Table()
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
     alert_table['first_trigger'] = first_trigger  # first trigger slice
 
-    alert_table.write('build/{}'.format(output_file), path='data', overwrite=True)
+    alert_table.meta = timeseries_table.meta
+    alert_table.meta['threshold'] = threshold
+
+    alert_table.write('{}/n{}_s{}_t{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
