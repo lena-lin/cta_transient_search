@@ -36,14 +36,15 @@ def get_th_index(timeseries, threshold):
 def send_alert(table, threshold):
     trigger_index = table['trans_factor_diff'] > threshold
     found_trigger = trigger_index.sum(axis=1)
-    list_trigger = [np.where(series is True)[0] for series in trigger_index]
+    list_trigger = [np.where(series == True)[0] for series in trigger_index]
+    embed()
     first_trigger = []
     for e in list_trigger:
         if len(e) > 0:
             first_trigger.append(e[0])
         else:
             first_trigger.append(np.nan)
-
+    embed()
     return trigger_index, found_trigger, first_trigger
 
 
