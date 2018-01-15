@@ -25,9 +25,9 @@ def main(
     else:
         num_cubes = len(table_alert)
         diff_flarestart = np.asarray(table_simulation['start_flare'] - table_alert['first_trigger'])
-        tp = len(diff_flarestart[diff_flarestart == 0])
+        tp = len(diff_flarestart[abs(diff_flarestart) <= 2])
         fn = len(diff_flarestart[np.isnan(diff_flarestart)])
-        fp = len(diff_flarestart[diff_flarestart != 0]) - fn
+        fp = len(diff_flarestart[abs(diff_flarestart) > 2]) - fn
         tn = 0
 
         embed()
