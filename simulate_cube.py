@@ -29,9 +29,12 @@ astropy tables:
 
 
 @click.command()
-@click.argument(
+@click.option(
     'output_path',
-    type=click.Path(dir_okay=True)
+    '--output_path',
+    type=click.Path(dir_okay=True),
+    help='Directory for output file (astropy table)',
+    default='build'
 )
 @click.option(
     '--n_transient',

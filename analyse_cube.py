@@ -73,7 +73,6 @@ def main(
         cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins)
         list_cubes_denoised.append(cube_denoised)
 
-    embed()
     denoised_table = Table()
     denoised_table['cube_smoothed'] = list_cubes_denoised
     denoised_table['trans_factor'] = denoised_table['cube_smoothed'].max(axis=2).max(axis=2)
