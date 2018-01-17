@@ -53,8 +53,6 @@ def wavelet_denoising_cube(
     help='Minimal distance to sliding background window (number of slices). Will be enlarged by max. 3 slices if the number of slices for the resulting cube can not be divided by 4.',
     default=5
 )
-
-
 def main(
     input_file,
     output_path,

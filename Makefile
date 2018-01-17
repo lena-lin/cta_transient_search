@@ -1,4 +1,4 @@
-n_transient=4
+n_transient=200
 num_slices_per_part=20
 num_slices=60
 transient_template_index=2

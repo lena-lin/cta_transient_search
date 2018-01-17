@@ -62,8 +62,6 @@ def send_alert(table, threshold):
     '-th',
     default=6
 )
-
-
 def main(
     input_file,
     output_path,

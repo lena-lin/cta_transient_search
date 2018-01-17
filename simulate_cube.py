@@ -71,7 +71,6 @@ astropy tables:
     help='Number of ra/dec bins for simulated cube',
     default='80'
 )
-
 def main(
     output_path,
     n_transient,
