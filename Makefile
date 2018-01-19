@@ -1,4 +1,5 @@
-n_transient=200
+irf_path='/home/lena/Dokumente/CTA'
+n_transient=2
 num_slices_per_part=20
 num_slices=60
 transient_template_index=2
@@ -6,7 +7,7 @@ transient_template_index=2
 all: build/evaluation_score.txt
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_index)_cube.hdf5 : simulate_cube.py | build
-	python simulate_cube.py -n $(n_transient) -s $(num_slices_per_part)
+	python simulate_cube.py -n $(n_transient) -s $(num_slices_per_part) -temp $(transient_template_index)
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_index)_trans.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_index)_cube.hdf5 | build
 

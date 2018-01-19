@@ -37,6 +37,13 @@ astropy tables:
     default='build'
 )
 @click.option(
+    'irf_path',
+    '--irf_path',
+    type=click.Path(dir_okay=True),
+    help='Directory for CTA Instrument Response Function (prod3b)',
+    default='/home/lena/Dokumente/CTA'
+)
+@click.option(
     '--n_transient',
     '-n',
     type=click.INT,
@@ -73,6 +80,7 @@ astropy tables:
 )
 def main(
     output_path,
+    irf_path,
     n_transient,
     transient_template_index,
     time_per_slice,
@@ -86,7 +94,7 @@ def main(
     '''
     Load CTA IRFs and transient template
     '''
-    cta_perf_fits = fits.open('/home/lena/Software/ctools-1.3.0/caldb/data/cta/prod3b/bcf/South_z20_average_100s/irf_file.fits')
+    cta_perf_fits = fits.open('{}/caldb/data/cta/prod3b/bcf/South_z20_average_100s/irf_file.fits'.format(irf_path))
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
