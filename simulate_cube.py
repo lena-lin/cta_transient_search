@@ -99,8 +99,8 @@ def main(
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
 
-    pks_data = np.loadtxt('/home/lena/Dokumente/CTA/transient_data_1.txt', unpack=True)
-    hess_data = np.loadtxt('/home/lena/Dokumente/CTA/transient_data_2.txt', unpack=True)
+    pks_data = np.loadtxt('data/PKS2155-flare06.dat', unpack=True)
+    hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
     gauss = signal.gaussian(num_slices, std=1)
     transient_templates = [pks_data[1], hess_data[1], gauss]
