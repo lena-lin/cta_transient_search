@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import click
 import astropy.units as u
 
@@ -13,7 +12,7 @@ from IPython import embed
 
 
 @click.command()
-@click.argument('out_file', type=click.Path(file_okay=True, dir_okay=False))
+@click.argument('output_path', type=click.Path(file_okay=False, dir_okay=True))
 @click.option(
     '--n_cubes',
     '-n',
@@ -22,7 +21,7 @@ from IPython import embed
     default='200'
 )
 @click.option(
-    '--n_slices',
+    '--num_slices',
     '-s',
     type=click.INT,
     help='Number of slices per cube',
@@ -35,14 +34,12 @@ from IPython import embed
     help='Time per slice',
     default='30'
 )
-
-
 def main(
-    out_file,
+    output_path,
     n_cubes,
-    n_slices,
+    num_slices,
     time_per_slice
-    ):
+):
     cta_perf_fits = fits.open('/home/lena/Software/ctools-1.3.0/caldb/data/cta/prod3b/bcf/South_z20_average_100s/irf_file.fits')
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
@@ -59,16 +56,14 @@ def main(
                     df_A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
                     df_Ang_Res=ang_res_cta_south,
-                    num_slices=n_slices
+                    num_slices=num_slices
                     )
         slices.append(slices_steady_source)
 
     embed()
     bg_table = Table()
     bg_table['bg_cubes'] = slices
-    bg_table.write('build/n200_s60_bg.hdf5', path='data')
-
-
+    bg_table.write('{}/n{}_s{}_bg.hdf5'.format(output_path, n_cubes, num_slices), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
