@@ -1,9 +1,11 @@
 import numpy as np
 import astropy.units as u
+from astropy.coordinates import SkyCoord
 import spectrum
 import performance
 from tqdm import tqdm
 from scipy import signal
+from IPython import embed
 
 
 def simulate_steady_source_with_transient(
@@ -27,6 +29,7 @@ def simulate_steady_source_with_transient(
 
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2
+    crab_coord = SkyCoord.from_name('Crab')
 
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
@@ -74,6 +77,7 @@ def simulate_steady_source(
         ):
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2
+    crab_coord = SkyCoord.from_name('Crab')
 
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
@@ -88,11 +92,12 @@ def simulate_steady_source(
 
         RA_crab, DEC_crab = performance.sample_positions_steady_source(x_pos, y_pos, ang_res_steady_source)
         RA_bg, DEC_bg = performance.sample_positions_background_random(fov_min, fov_max, int(N_background_cta))
-        RA = np.concatenate([RA_bg, RA_crab])
-        DEC = np.concatenate([DEC_bg, DEC_crab])
+        RA = np.concatenate([RA_bg, RA_crab]) + crab_coord.ra.value - (fov_max - fov_min).value / 2
+        DEC = np.concatenate([DEC_bg, DEC_crab]) + crab_coord.dec.value - (fov_max - fov_min).value / 2
 
-        slices.append(np.histogram2d(RA, DEC, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
+        slices.append(np.histogram2d(RA, DEC))#, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
         n_events += 1/float(num_slices)*len(folded_events_crab)
+        embed()
     # print("Events Mean: ", n_events)
     return np.array(slices)
 
