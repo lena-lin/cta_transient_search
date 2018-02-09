@@ -32,7 +32,7 @@ def interp_eff_area(E_TeV, df_A_eff):
 
 def response(T, N, e_min, e_max, A_eff, simulation_area):
     '''
-    Returns array of events from a source with power law distribution folded with effective area of the telescope
+    Returns array of events (list of energies) from a source with power law distribution folded with effective area of the telescope
 
     Parameters:
     index: index of the power law spectrum
