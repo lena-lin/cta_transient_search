@@ -61,9 +61,18 @@ def main(
 ):
     cube_raw_table = Table.read(input_file, path='data')
 
-    n_transient = cube_raw_table.meta['n_transient']
-    num_slices = cube_raw_table.meta['num_slices']
-    transient_template_index = cube_raw_table.meta['template']
+    try:
+        n_transient = cube_raw_table.meta['n_transient']
+    except:
+        n_transient = None
+
+        num_slices = cube_raw_table.meta['num_slices']
+
+    try:
+        transient_template_index = cube_raw_table.meta['template']
+    except:
+        transient_template_index = None
+        
     bins = cube_raw_table.meta['bins']
 
     list_cubes_denoised = []
