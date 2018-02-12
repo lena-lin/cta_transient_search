@@ -149,7 +149,7 @@ def main(
         Simulate slices with steady source and transient
         '''
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
-        list_cu_flare.append(cu_flare)
+        list_cu_flare.append(cu_flare) ## nicht vrest  mitnehmen?
 
         slices_transient, trans_scale = simulate_steady_source_with_transient(
                     x_pos_steady_source=6*u.deg,
@@ -190,6 +190,9 @@ def main(
     '''
     Write and save astropy tables for simulated cubes and transients.
     '''
+    print('Length Slices: ', len(slices))
+    print('Length Cu_Flare List', len(list_cu_flare))
+    print('Length Transient scales', len(trans_scales))
 
     list_cubes = slices.reshape([-1, 3*num_slices, bins_, bins_])
     list_transients = trans_scales.reshape([-1, 3*num_slices])
