@@ -1,8 +1,8 @@
 irf_path=''
-n_transient=2
+n_transient=5
 num_slices_per_part=20
 num_slices=60
-transient_template_index=2
+transient_template_index=4
 
 all: build/evaluation_score.txt
 

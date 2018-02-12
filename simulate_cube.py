@@ -12,6 +12,8 @@ from scipy import signal
 
 from IPython import embed
 
+from LC_forms import Simple_Gaussian, Small_Gaussian, Exponential
+
 
 '''
 Simulation (cubes) for a transient in the field of view of a steady source.
@@ -41,7 +43,7 @@ astropy tables:
     '--irf_path',
     type=click.Path(dir_okay=True),
     help='Directory for CTA Instrument Response Function (prod3b)',
-    default='/home/lena/Dokumente/CTA'
+    default=''
 )
 @click.option(
     '--n_transient',
@@ -98,12 +100,17 @@ def main(
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
-
+# First Choise of used templates to interpolate
     pks_data = np.loadtxt('data/PKS2155-flare06.dat', unpack=True)
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
-
+# simple gaussian, std= 1
     gauss = signal.gaussian(num_slices, std=1)
-    transient_templates = [pks_data[1], hess_data[1], gauss]
+# new Templates after fitting gaussian + exponential to data
+    simple = Simple_Gaussian(num_slices,4) # 4% noise
+    small = Small_Gaussian(num_slices,4)
+    exponential = Exponential(num_slices,4)
+
+    transient_templates = [pks_data[1], hess_data[1], gauss,simple,small,exponential]  # indices 0 to 5
 
     a_eff_cta_south = pd.DataFrame(OrderedDict({"E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2, "A_eff": data_A_eff.data['EFFAREA'][0][0]}))
     ang_res_cta_south = pd.DataFrame(OrderedDict({"E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2, "Ang_Res": data_ang_res.data['SIGMA_1'][0][0]}))
