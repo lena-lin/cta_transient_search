@@ -1,4 +1,4 @@
-irf_path='/home/lena/Dokumente/CTA'
+irf_path=''
 n_transient=2
 num_slices_per_part=20
 num_slices=60

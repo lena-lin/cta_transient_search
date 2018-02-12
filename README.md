@@ -1,4 +1,4 @@
-# CTA Transient Search
+# CTA Transient Search - New Templates 
 
 New working branch for integration of new templates (light curves and spectra) and extension of time scales 
 

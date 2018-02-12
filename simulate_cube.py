@@ -94,7 +94,7 @@ def main(
     '''
     Load CTA IRFs and transient template
     '''
-    cta_perf_fits = fits.open('{}/caldb/data/cta/prod3b/bcf/South_z20_average_100s/irf_file.fits'.format(irf_path))
+    cta_perf_fits = fits.open('/home/jana/Schreibtisch/Projekt Master/Masterarbeit/Templates/Sensitivity/IRFs/South_z20_average_100s/irf_file.fits')
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
