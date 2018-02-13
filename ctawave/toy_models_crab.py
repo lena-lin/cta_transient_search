@@ -35,7 +35,7 @@ def simulate_steady_source_with_transient(
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
 
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)),  transient_template)
-    transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
+    transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)  ## Pro slice eine Transient scale
 
     # N_transient_max = 2*N_steady_source                                         # Random number for transient sample!!!
     # transient_scale = (N_transient_max*signal.gaussian(num_slices, std=5)).astype(int)  # arbitrary value for std!!
@@ -53,8 +53,8 @@ def simulate_steady_source_with_transient(
             RA_tr, DEC_tr = performance.sample_positions_steady_source(x_pos_transient, y_pos_transient, ang_res_transinet)
         else:
             RA_tr, DEC_tr = [], []
-        RA = np.concatenate([RA_bg, RA_tr, RA_crab])
-        DEC = np.concatenate([DEC_bg, DEC_tr, DEC_crab])
+        RA = np.concatenate([RA_bg, RA_tr, RA_crab]) #+ crab_coord.ra.value - (fov_max - fov_min).value / 2
+        DEC = np.concatenate([DEC_bg, DEC_tr, DEC_crab]) #+ crab_coord.dec.value - (fov_max - fov_min).value / 2
 
         slices = np.append(slices, np.histogram2d(RA, DEC, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
 
@@ -90,8 +90,8 @@ def simulate_steady_source(
         ang_res_steady_source = performance.interp_ang_res(folded_events_crab, df_Ang_Res)
         RA_crab, DEC_crab = performance.sample_positions_steady_source(x_pos, y_pos, ang_res_steady_source)
         RA_bg, DEC_bg = performance.sample_positions_background_random(fov_min, fov_max, int(N_background_cta))
-        RA = np.concatenate([RA_bg, RA_crab]) + crab_coord.ra.value - (fov_max - fov_min).value / 2
-        DEC = np.concatenate([DEC_bg, DEC_crab]) + crab_coord.dec.value - (fov_max - fov_min).value / 2
+        RA = np.concatenate([RA_bg, RA_crab]) #+ crab_coord.ra.value - (fov_max - fov_min).value / 2
+        DEC = np.concatenate([DEC_bg, DEC_crab]) #+ crab_coord.dec.value - (fov_max - fov_min).value / 2
 
         slices.append(np.histogram2d(RA, DEC, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
         n_events += 1/float(num_slices)*len(folded_events_crab)

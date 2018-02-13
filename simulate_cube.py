@@ -88,8 +88,8 @@ def main(
     time_per_slice,
     num_slices,
     bins_,
-    cu_min=0.1,
-    cu_max=7,
+    cu_min=0.1, #0.1
+    cu_max=7,#7
     duration_min=10,
     duration_max=100,
 ):
@@ -111,6 +111,8 @@ def main(
     exponential = Exponential(num_slices,4)
 
     transient_templates = [pks_data[1], hess_data[1], gauss,simple,small,exponential]  # indices 0 to 5
+# Choose start of transient dependent on template
+    transient_start_slices = np.array([20,20,num_slices/2.0-3, num_slices/2.0-5, num_slices/2.0-1, num_slices/2.0-1.0/3.0*num_slices])
 
     a_eff_cta_south = pd.DataFrame(OrderedDict({"E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2, "A_eff": data_A_eff.data['EFFAREA'][0][0]}))
     ang_res_cta_south = pd.DataFrame(OrderedDict({"E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2, "Ang_Res": data_ang_res.data['SIGMA_1'][0][0]}))
@@ -204,12 +206,13 @@ def main(
     trans_table['cu_flare'] = list_cu_flare
     trans_table['template'] = transient_template_index
 
-    ### start, end slice for gaussian shape, arbitrary!!
-    trans_table['start_flare'] = 7 + num_slices
+    ### start slice for templates, dependent on template index + num_slices
+    ### end slice arbitrary!! Not used
+    trans_table['start_flare'] = transient_start_slices[transient_template_index] + num_slices  ## default 7
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
-    cube_table['template'] = transient_template_index
+    cube_table['template'] = transient_template_index  ## Bisher eine Zahl ?
     cube_table['num_slices'] = 3*num_slices
     cube_table['num_flare_slices'] = num_slices
 

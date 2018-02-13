@@ -23,6 +23,7 @@ def moving_average(timeseries, interval_size=10):
 
 def get_smoothed_table(input_file):
     table = Table.read(input_file, path='data')
+    print('Der Trans_Factor hat circa diese Werte', table['trans_factor'])
     table['trans_factor_mov_avg'] = list(map(moving_average, table['trans_factor']))
     table['trans_factor_diff'] = table['trans_factor'] - table['trans_factor_mov_avg']
 
@@ -44,7 +45,7 @@ def send_alert(table, threshold):
             first_trigger.append(e[0])
         else:
             first_trigger.append(np.nan)
-
+    print(first_trigger[0])
     return trigger_index, found_trigger, first_trigger
 
 
@@ -60,7 +61,7 @@ def send_alert(table, threshold):
 @click.option(
     '--threshold',
     '-th',
-    default=6
+    default=30
 )
 def main(
     input_file,
