@@ -66,13 +66,13 @@ def main(
     except:
         n_transient = None
 
-        num_slices = cube_raw_table.meta['num_slices']
+    num_slices = cube_raw_table.meta['num_slices']
 
     try:
         transient_template_index = cube_raw_table.meta['template']
     except:
         transient_template_index = None
-        
+
     bins = cube_raw_table.meta['bins']
 
     list_cubes_denoised = []
