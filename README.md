@@ -1,13 +1,13 @@
 # CTA Transient Search - New Templates 
 
 New working branch for integration of new templates (light curves and spectra) and extension of time scales :
-- Installation of functions for exponential and excellent light curves 
+- Installation of functions for exponential and exponential light curves (See Templates in */Plots*)
 - Variable setting of the transient start time depending on the selected template 
 - Randomized selection of the template / the light curve shape 
 - Check influence of noise 
-- Comparison of Crab and transient peak fluxes --> Restriction of Crab Unit Flare
+- Comparison of Crab and transient peak fluxes --> Restriction of Crab Unit Flare(See examples 2 CU and 0.3 CU in */Plots*)
 - Lowering and Changing of alter threshold 
-- Tests...: distance transient - steady source, time distance of tweo transients, strength of the transient in CUs, Threshold, sliding window gap.... 
+- Tests : distance transient - steady source, time distance of tweo transients, strength of the transient in CUs, Threshold, sliding window gap.... 
 
 
 <br><br>
