@@ -88,7 +88,7 @@ def main(
     time_per_slice,
     num_slices,
     bins_,
-    cu_min=0.1, #0.1
+    cu_min=1, #0.1
     cu_max=7,#7
     duration_min=10,
     duration_max=100,
