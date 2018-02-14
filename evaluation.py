@@ -24,9 +24,9 @@ def main(
     else:
         num_cubes = len(table_alert)
         diff_flarestart = np.asarray(table_simulation['start_flare'] - table_alert['first_trigger'])
-        tp = len(diff_flarestart[abs(diff_flarestart) <= 3])
+        tp = len(diff_flarestart[abs(diff_flarestart) <= 2])
         fn = len(diff_flarestart[np.isnan(diff_flarestart)])
-        fp = len(diff_flarestart[abs(diff_flarestart) > 3])
+        fp = len(diff_flarestart[abs(diff_flarestart) > 2])
         tn = 0
 
         print('TP-Rate: {} \n FN-Rate: {} \n FP-Rate: {}'.format(tp/num_cubes, fn/num_cubes, fp/num_cubes))
