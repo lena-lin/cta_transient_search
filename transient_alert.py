@@ -68,6 +68,7 @@ def main(
     threshold
 ):
     timeseries_table = get_smoothed_table(input_file)
+    embed()
     trigger_index, found_trigger, first_trigger = send_alert(timeseries_table, threshold)
 
     n_transient = timeseries_table.meta['n_transient']

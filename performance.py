@@ -56,11 +56,11 @@ def response(T, N, e_min, e_max, A_eff, simulation_area):
     return folded_events
 
 
-def sample_positions_steady_source(x_pos, y_pos, ang_res):
+def sample_positions_steady_source(ra_pos, dec_pos, ang_res):
     '''
     Sample position for every particle with given mean position and angular resolution as mean and covariance for normal distribution
     '''
-    mean = [x_pos / u.deg, y_pos / u.deg]
+    mean = [ra_pos, dec_pos]
     RA = []
     DEC = []
     for r in ang_res:
@@ -71,13 +71,21 @@ def sample_positions_steady_source(x_pos, y_pos, ang_res):
     return RA, DEC
 
 
-def sample_positions_background_random(fov_min, fov_max, N):
+def sample_positions_background_random(fov, source_coordinates, N):
     '''
     Sample positions for given number of background events from normal distribution
     '''
+    RA_bg = np.random.uniform(
+                        source_coordinates.ra.value - fov.value / 2,
+                        source_coordinates.ra.value + fov.value / 2,
+                        N,
+                    )
+    DEC_bg = np.random.uniform(
+                        source_coordinates.dec.value - fov.value / 2,
+                        source_coordinates.dec.value + fov.value / 2,
+                        N,
+                    )
 
-    RA_bg = np.random.uniform(fov_min / u.deg, fov_max / u.deg, N)
-    DEC_bg = np.random.uniform(fov_min / u.deg, fov_max / u.deg, N)
     return RA_bg, DEC_bg
 
 
