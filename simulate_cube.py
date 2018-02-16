@@ -44,7 +44,7 @@ astropy tables:
     '--irf_path',
     type=click.Path(dir_okay=True),
     help='Directory for CTA Instrument Response Function (prod3b)',
-    default=''
+    default='/home/lena/Dokumente/CTA'
 )
 @click.option(
     '--n_transient',
@@ -89,15 +89,15 @@ def main(
     time_per_slice,
     num_slices,
     bins_,
-    cu_min=1, #0.1
-    cu_max=7,#7
+    cu_min=0.1
+    cu_max=7
     duration_min=10,
     duration_max=100,
 ):
     '''
     Load CTA IRFs and transient template
     '''
-    cta_perf_fits = fits.open('/home/jana/Schreibtisch/Projekt Master/Masterarbeit/Templates/Sensitivity/IRFs/South_z20_average_100s/irf_file.fits')
+    cta_perf_fits = fits.open('{}/caldb/data/cta/prod3b/bcf/South_z20_average_100s/irf_file.fits'.format(irf_path))
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
@@ -107,13 +107,13 @@ def main(
 # simple gaussian, std= 1
     gauss = signal.gaussian(num_slices, std=1)
 # new Templates after fitting gaussian + exponential to data
-    simple = Simple_Gaussian(num_slices,4) # 4% noise
-    small = Small_Gaussian(num_slices,4)
-    exponential = Exponential(num_slices,4)
+    simple = Simple_Gaussian(num_slices, 4)  # 4% noise
+    small = Small_Gaussian(num_slices, 4)
+    exponential = Exponential(num_slices, 4)
 
-    transient_templates = [pks_data[1], hess_data[1], gauss,simple,small,exponential]  # indices 0 to 5
+    transient_templates = [pks_data[1], hess_data[1], gauss, simple, small, exponential]  # indices 0 to 5
 # Choose start of transient dependent on template
-    transient_start_slices = np.array([20,20,num_slices/2.0-3, num_slices/2.0-5, num_slices/2.0-1, num_slices/2.0-1.0/3.0*num_slices])
+    transient_start_slices = np.array([20, 20, num_slices/2.0-3, num_slices/2.0-5, num_slices/2.0-1, num_slices/2.0-1.0/3.0*num_slices])
 
     a_eff_cta_south = pd.DataFrame(
                         OrderedDict(
