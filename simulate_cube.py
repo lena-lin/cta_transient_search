@@ -12,6 +12,8 @@ from scipy import signal
 
 from IPython import embed
 
+from LC_forms import Simple_Gaussian, Small_Gaussian, Exponential
+
 
 '''
 Simulation (cubes) for a transient in the field of view of a steady source.
@@ -99,12 +101,19 @@ def main(
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
-
+# First Choise of used templates to interpolate
     pks_data = np.loadtxt('data/PKS2155-flare06.dat', unpack=True)
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
-
+# simple gaussian, std= 1
     gauss = signal.gaussian(num_slices, std=1)
-    transient_templates = [pks_data[1], hess_data[1], gauss]
+# new Templates after fitting gaussian + exponential to data
+    simple = Simple_Gaussian(num_slices, 4)  # 4% noise
+    small = Small_Gaussian(num_slices, 4)
+    exponential = Exponential(num_slices, 4)
+
+    transient_templates = [pks_data[1], hess_data[1], gauss, simple, small, exponential]  # indices 0 to 5
+# Choose start of transient dependent on template
+    transient_start_slices = np.array([20, 20, num_slices/2.0-3, num_slices/2.0-5, num_slices/2.0-1, num_slices/2.0-1.0/3.0*num_slices])
 
     a_eff_cta_south = pd.DataFrame(
                         OrderedDict(
@@ -152,7 +161,7 @@ def main(
         Simulate slices with steady source and transient
         '''
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
-        list_cu_flare.append(cu_flare)
+        list_cu_flare.append(cu_flare) ## nicht vrest  mitnehmen?
 
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     df_A_eff=a_eff_cta_south,
@@ -198,8 +207,9 @@ def main(
     trans_table['cu_flare'] = list_cu_flare
     trans_table['template'] = transient_template_index
 
-    ### start, end slice for gaussian shape, arbitrary!!
-    trans_table['start_flare'] = 7 + num_slices
+    ### start slice for templates, dependent on template index + num_slices
+    ### end slice arbitrary!! Not used
+    trans_table['start_flare'] = transient_start_slices[transient_template_index] + num_slices  ## default 7
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes

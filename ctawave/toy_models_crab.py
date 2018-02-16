@@ -70,6 +70,7 @@ def simulate_steady_source_with_transient(
                                                     dec_transient,
                                                     ang_res_transinet,
                                                 )
+
         else:
             RA_tr, DEC_tr = [], []
 
@@ -136,7 +137,7 @@ def simulate_steady_source(
                                         )
         RA = np.concatenate([RA_bg, RA_crab])
         DEC = np.concatenate([DEC_bg, DEC_crab])
-        
+
         slices.append(
                 np.histogram2d(
                     RA,
