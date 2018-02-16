@@ -89,8 +89,8 @@ def main(
     time_per_slice,
     num_slices,
     bins_,
-    cu_min=0.1
-    cu_max=7
+    cu_min=0.1,
+    cu_max=7,
     duration_min=10,
     duration_max=100,
 ):
@@ -196,9 +196,6 @@ def main(
     '''
     Write and save astropy tables for simulated cubes and transients.
     '''
-    print('Length Slices: ', len(slices))
-    print('Length Cu_Flare List', len(list_cu_flare))
-    print('Length Transient scales', len(trans_scales))
 
     list_cubes = slices.reshape([-1, 3*num_slices, bins_, bins_])
     list_transients = trans_scales.reshape([-1, 3*num_slices])
@@ -216,7 +213,7 @@ def main(
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
-    cube_table['template'] = transient_template_index  ## Bisher eine Zahl ?
+    cube_table['template'] = transient_template_index
     cube_table['num_slices'] = 3*num_slices
     cube_table['num_flare_slices'] = num_slices
 
