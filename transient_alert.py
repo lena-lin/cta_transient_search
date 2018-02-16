@@ -2,8 +2,6 @@ import click
 import numpy as np
 from astropy.table import Table
 
-from IPython import embed
-
 '''
     Send alerts by analysing the timeseries from analyse_cube.py
     Input: astropy table (hdf5) containing one timeseries per simulation of length num_slices (60)

@@ -66,7 +66,7 @@ def main(
     except:
         n_transient = None
 
-    num_slices = cube_raw_table.meta['num_slices']  ## deleted indent 
+    num_slices = cube_raw_table.meta['num_slices']
 
     try:
         transient_template_index = cube_raw_table.meta['template']
