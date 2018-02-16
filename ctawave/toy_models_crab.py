@@ -9,10 +9,6 @@ from IPython import embed  # Neu seit lettztens
 
 
 def simulate_steady_source_with_transient(
-            x_pos_steady_source,
-            y_pos_steady_source,
-            x_pos_transient,
-            y_pos_transient,
             df_A_eff,
             fits_bg_rate,
             df_Ang_Res,
@@ -23,8 +19,7 @@ def simulate_steady_source_with_transient(
             bins=[80, 80],
             E_min=0.1 * u.TeV,
             E_max=100 * u.TeV,
-            fov_min=0 * u.deg,
-            fov_max=12 * u.deg,
+            fov=12 * u.deg,
             ):
 
     cta_radius = 800 * u.m
@@ -37,33 +32,33 @@ def simulate_steady_source_with_transient(
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)),  transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)  ## Pro slice eine Transient scale
 
-    # N_transient_max = 2*N_steady_source                                         # Random number for transient sample!!!
-    # transient_scale = (N_transient_max*signal.gaussian(num_slices, std=5)).astype(int)  # arbitrary value for std!!
+    ra_transient = np.random.randint(crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2)
+    dec_transient = np.random.randint(crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2)
 
     slices = []
     # print('Simulate transient')
     for i in range(num_slices):
         folded_events_crab = performance.response(time_per_slice, N_steady_source, E_min, E_max, df_A_eff, sim_area)
         ang_res_steady_source = performance.interp_ang_res(folded_events_crab, df_Ang_Res)
-        RA_crab, DEC_crab = performance.sample_positions_steady_source(x_pos_steady_source, y_pos_steady_source, ang_res_steady_source)
-        RA_bg, DEC_bg = performance.sample_positions_background_random(fov_min, fov_max, int(N_background_cta))
+        RA_crab, DEC_crab = performance.sample_positions_steady_source(crab_coord.ra.deg,crab_coord.dec.deg, ang_res_steady_source)
+        RA_bg, DEC_bg = performance.sample_positions_background_random(fov, crab_coord, int(N_background_cta))
         if transient_scale[i] > 0:
             folded_events_transient = performance.response(time_per_slice, transient_scale[i], E_min, E_max, df_A_eff, sim_area)
             ang_res_transinet = performance.interp_ang_res(folded_events_transient, df_Ang_Res)
-            RA_tr, DEC_tr = performance.sample_positions_steady_source(x_pos_transient, y_pos_transient, ang_res_transinet)
+            RA_tr, DEC_tr = performance.sample_positions_steady_source(ra_transient,dec_transient, ang_res_transinet)
         else:
             RA_tr, DEC_tr = [], []
-        RA = np.concatenate([RA_bg, RA_tr, RA_crab]) #+ crab_coord.ra.value - (fov_max - fov_min).value / 2
-        DEC = np.concatenate([DEC_bg, DEC_tr, DEC_crab]) #+ crab_coord.dec.value - (fov_max - fov_min).value / 2
+        RA = np.concatenate([RA_bg, RA_tr, RA_crab])
+        DEC = np.concatenate([DEC_bg, DEC_tr, DEC_crab])
 
-        slices = np.append(slices, np.histogram2d(RA, DEC, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
+        slices = np.append(slices, np.histogram2d(RA, DEC,    range=[
+                        [crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2],
+                        [crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2]], bins=bins)[0])  ## centered
 
-    return np.array(slices).reshape([-1, bins[0], bins[1]]), transient_scale
+    return np.array(slices), transient_scale, ra_transient, dec_transient
 
 
 def simulate_steady_source(
-            x_pos,
-            y_pos,
             df_A_eff,
             fits_bg_rate,
             df_Ang_Res,
@@ -72,31 +67,29 @@ def simulate_steady_source(
             bins=[80, 80],
             E_min=0.1 * u.TeV,
             E_max=100 * u.TeV,
-            fov_min=0 * u.deg,
-            fov_max=12 * u.deg,
+            fov = 12 * u.deg
         ):
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2
-    crab_coord = SkyCoord.from_name('Crab')  ## n
+    crab_coord = SkyCoord.from_name('Crab')
+
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
-
     n_events = 0
-    # print(N_background_cta, N_steady_source)
+
     slices = []
-    # print('Simulate steady source')
     for i in range(num_slices):
         folded_events_crab = performance.response(time_per_slice, N_steady_source, E_min, E_max, df_A_eff, sim_area)
         ang_res_steady_source = performance.interp_ang_res(folded_events_crab, df_Ang_Res)
-        RA_crab, DEC_crab = performance.sample_positions_steady_source(x_pos, y_pos, ang_res_steady_source)
-        RA_bg, DEC_bg = performance.sample_positions_background_random(fov_min, fov_max, int(N_background_cta))
-        RA = np.concatenate([RA_bg, RA_crab]) #+ crab_coord.ra.value - (fov_max - fov_min).value / 2
-        DEC = np.concatenate([DEC_bg, DEC_crab]) #+ crab_coord.dec.value - (fov_max - fov_min).value / 2
+        RA_crab, DEC_crab = performance.sample_positions_steady_source(crab_coord.ra.deg,crab_coord.dec.deg, ang_res_steady_source)
+        RA_bg, DEC_bg = performance.sample_positions_background_random(fov, crab_coord, int(N_background_cta))
+        RA = np.concatenate([RA_bg, RA_crab]) #+ crab_coord.ra.value - fov.value / 2       #### ??? Hier und oben nicht?
+        DEC = np.concatenate([DEC_bg, DEC_crab]) #+ crab_coord.dec.value - fov.value / 2
 
-        slices.append(np.histogram2d(RA, DEC, range=[[fov_min / u.deg, fov_max / u.deg], [fov_min / u.deg, fov_max / u.deg]], bins=bins)[0])
+        slices.append(np.histogram2d(RA,DEC,
+                    range=[[crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2],[crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2]],
+                    bins=bins,)[0])
         n_events += 1/float(num_slices)*len(folded_events_crab)
-        #embed()
-    # print("Events Mean: ", n_events)
     return np.array(slices)
 
 

@@ -18,7 +18,7 @@ from random import randint
 
 '''
 Simulation (cubes) for a transient in the field of view of a steady source.
-3 simulation parts per cube: steady source, steady source with transient, steady source. Every part contains 'num_slices' images/slices.
+3 simulation parts per cube: steady source, steady source with transient, steady source.
 Input:
 See Click.options()
 
@@ -126,10 +126,6 @@ def main(
     ang_res_cta_south = pd.DataFrame(OrderedDict({"E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2, "Ang_Res": data_ang_res.data['SIGMA_1'][0][0]}))
 
 
-    ### used as range for random transient positions
-    fov_min = 0 * u.deg
-    fov_max = 12 * u.deg
-
     '''
     Pull transient template indices
     '''
@@ -141,14 +137,14 @@ def main(
     slices = []
     trans_scales = []
     list_cu_flare = []
+    list_ra_transient = []
+    list_dec_transient = []
     for i in tqdm(range(n_transient)):
 
         '''
         Simulate slices containing one steady source and no transient
         '''
         slices_steady_source = simulate_steady_source(
-                    x_pos=6*u.deg,
-                    y_pos=6*u.deg,
                     df_A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
                     df_Ang_Res=ang_res_cta_south,
@@ -167,13 +163,8 @@ def main(
         list_cu_flare.append(cu_flare) ## nicht vrest  mitnehmen?
 
         print('Start simulating transient with template_index', transient_template_index[i]) # **
-        slices_transient, trans_scale = simulate_steady_source_with_transient(
-                    x_pos_steady_source=6*u.deg,
-                    y_pos_steady_source=6*u.deg,
-                    # x_pos_transient=np.random.randint(fov_min/u.deg, fov_max/u.deg)*u.deg,
-                    # y_pos_transient=np.random.randint(fov_min/u.deg, fov_max/u.deg)*u.deg,
-                    x_pos_transient=0*u.deg,
-                    y_pos_transient=0*u.deg,
+
+        slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     df_A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
                     df_Ang_Res=ang_res_cta_south,
@@ -185,13 +176,13 @@ def main(
                     )
         trans_scales = np.append(trans_scales, trans_scale)
         slices = np.append(slices, slices_transient)
+        list_ra_transient.append(ra_transient)
+        list_dec_transient.append(dec_transient)
 
         '''
         Simulate slices containing one steady source and no transient
         '''
         slices_steady_source = simulate_steady_source(
-                    x_pos=6*u.deg,
-                    y_pos=6*u.deg,
                     df_A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
                     df_Ang_Res=ang_res_cta_south,
