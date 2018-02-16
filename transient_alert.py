@@ -2,8 +2,6 @@ import click
 import numpy as np
 from astropy.table import Table
 
-from IPython import embed
-
 '''
     Send alerts by analysing the timeseries from analyse_cube.py
     Input: astropy table (hdf5) containing one timeseries per simulation of length num_slices (60)
@@ -68,7 +66,6 @@ def main(
     threshold
 ):
     timeseries_table = get_smoothed_table(input_file)
-    embed()
     trigger_index, found_trigger, first_trigger = send_alert(timeseries_table, threshold)
 
     n_transient = timeseries_table.meta['n_transient']

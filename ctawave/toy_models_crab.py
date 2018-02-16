@@ -134,9 +134,9 @@ def simulate_steady_source(
                                             crab_coord,
                                             int(N_background_cta),
                                         )
-        RA = np.concatenate([RA_bg, RA_crab]) + crab_coord.ra.deg - fov.value / 2
-        DEC = np.concatenate([DEC_bg, DEC_crab]) + crab_coord.dec.deg - fov.value / 2
-
+        RA = np.concatenate([RA_bg, RA_crab])
+        DEC = np.concatenate([DEC_bg, DEC_crab])
+        
         slices.append(
                 np.histogram2d(
                     RA,
