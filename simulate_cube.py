@@ -57,8 +57,15 @@ astropy tables:
     '--transient_template_index',
     '-temp',
     type=click.INT,
-    help='Transient template index: 0=pks, 1=hess, 2=gauss',
+    help='Transient template index: 0=pks, 1=hess, 2=broad gauss, 3=narrow gauss, 4=deltapeak + exponential fall, None=Random',
     default='2'
+)
+@click.option(
+    '--random_transient_template',
+    '-rand_temp',
+    #type=click.BOOL,
+    help='Samples random template for transient shape, if True',
+    default='False'
 )
 @click.option(
     '--time_per_slice',
@@ -86,6 +93,7 @@ def main(
     irf_path,
     n_transient,
     transient_template_index,
+    random_transient_template,
     time_per_slice,
     num_slices,
     bins_,
@@ -104,14 +112,13 @@ def main(
 # First Choise of used templates to interpolate
     pks_data = np.loadtxt('data/PKS2155-flare06.dat', unpack=True)
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
-# simple gaussian, std= 1
-    gauss = signal.gaussian(num_slices, std=1)
+
 # new Templates after fitting gaussian + exponential to data
     simple = Simple_Gaussian(num_slices, 4)  # 4% noise
     small = Small_Gaussian(num_slices, 4)
     exponential = Exponential(num_slices, 4)
 
-    transient_templates = [pks_data[1], hess_data[1], gauss, simple, small, exponential]  # indices 0 to 5
+    transient_templates = [pks_data[1], hess_data[1], simple, small, exponential]  # indices 0 to 5
 # Choose start of transient dependent on template
     transient_start_slices = np.array([20, 20, num_slices/2.0-3, num_slices/2.0-5, num_slices/2.0-1, num_slices/2.0-1.0/3.0*num_slices])
 
@@ -140,6 +147,17 @@ def main(
     list_cu_flare = []
     list_ra_transient = []
     list_dec_transient = []
+
+    if random_transient_template:
+        list_templates = np.random.randint(0, len(transient_templates), n_transient)
+        transient_template_filename = 'random'
+    else:
+        try:
+            list_templates = np.ones(n_transient) * transient_template_index
+            transient_template_filename = transient_template_index
+        except:
+            print('Transient Template does not exist')
+
     for i in tqdm(range(n_transient)):
 
         '''
@@ -161,15 +179,16 @@ def main(
         Simulate slices with steady source and transient
         '''
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
+
         list_cu_flare.append(cu_flare) ## nicht vrest  mitnehmen?
+
 
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     df_A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
                     df_Ang_Res=ang_res_cta_south,
                     cu_flare=cu_flare,
-                    transient_template=transient_templates[transient_template_index],
-                    # num_slices=np.random.randint(duration_min, duration_max),
+                    transient_template=transient_templates[list_templates[i]],
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
                     bins=[bins_, bins_],
@@ -197,40 +216,46 @@ def main(
     Write and save astropy tables for simulated cubes and transients.
     '''
 
+
+
     list_cubes = slices.reshape([-1, 3*num_slices, bins_, bins_])
     list_transients = trans_scales.reshape([-1, 3*num_slices])
+    list_transient_positions = np.dstack((list_ra_transient, list_dec_transient))[0]
 
     cube_table = Table()
     trans_table = Table()
 
     trans_table['timeseries'] = list_transients
     trans_table['cu_flare'] = list_cu_flare
-    trans_table['template'] = transient_template_index
+    trans_table['template'] = list_templates
+    trans_table['position'] = list_transient_positions
 
     ### start slice for templates, dependent on template index + num_slices
-    ### end slice arbitrary!! Not used
+    ### end slice arbitrary!! Not used so far
     trans_table['start_flare'] = transient_start_slices[transient_template_index] + num_slices  ## default 7
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
-    cube_table['template'] = transient_template_index
+    cube_table['template'] = list_templates
     cube_table['num_slices'] = 3*num_slices
     cube_table['num_flare_slices'] = num_slices
 
     cube_table.meta['n_transient'] = n_transient
     cube_table.meta['num_slices'] = 3*num_slices
-    cube_table.meta['template'] = transient_template_index
+    cube_table.meta['template'] = transient_template_filename
     cube_table.meta['time_per_slice'] = time_per_slice
     cube_table.meta['bins'] = bins_
+    cube_table.meta['fov'] = 12 * u.deg
+    cube_table.meta['steady_source'] = 'Crab'
 
     trans_table.meta['n_transient'] = n_transient
     trans_table.meta['num_slices'] = 3*num_slices
-    trans_table.meta['template'] = transient_template_index
+    trans_table.meta['template'] = transient_template_filename
     trans_table.meta['time_per_slice'] = time_per_slice
     trans_table.meta['bins'] = bins_
 
-    cube_table.write('{}/n{}_s{}_t{}_cube.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
-    trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_index), path='data', overwrite=True)
+    cube_table.write('{}/n{}_s{}_t{}_cube.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
+    trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
