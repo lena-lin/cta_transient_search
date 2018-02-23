@@ -5,7 +5,6 @@ from tqdm import tqdm
 from IPython import embed
 
 from astropy.table import Table
-from astropy.coordinates import SkyCoord
 
 from ctawave.denoise import thresholding_3d
 from ctawave.toy_models_crab import remove_steady_background

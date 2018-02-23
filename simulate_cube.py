@@ -8,11 +8,10 @@ from ctawave.toy_models_crab import simulate_steady_source_with_transient, simul
 from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
-from scipy import signal
 
 from IPython import embed
 
-from LC_forms import Simple_Gaussian, Small_Gaussian, Exponential
+from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential
 
 
 '''
@@ -57,13 +56,12 @@ astropy tables:
     '--transient_template_index',
     '-temp',
     type=click.INT,
-    help='Transient template index: 0=pks, 1=hess, 2=broad gauss, 3=narrow gauss, 4=deltapeak + exponential fall, None=Random',
+    help='Transient template index: 0=pks, 1=hess, 2=broad gauss, 3=narrow gauss, 4=deltapeak + exponential fall',
     default='2'
 )
 @click.option(
     '--random_transient_template',
     '-rand_temp',
-    #type=click.BOOL,
     help='Samples random template for transient shape, if True',
     default='False'
 )
@@ -114,13 +112,19 @@ def main(
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
-    simple = Simple_Gaussian(num_slices, 4)  # 4% noise
-    small = Small_Gaussian(num_slices, 4)
-    exponential = Exponential(num_slices, 4)
+    simple = broad_gaussian(num_slices, 4)  # 4% noise
+    small = narrow_gaussian(num_slices, 4)
+    exponential = deltapeak_exponential(num_slices, 4)
 
-    transient_templates = [pks_data[1], hess_data[1], simple, small, exponential]  # indices 0 to 5
+    transient_templates = [pks_data[1] - pks_data[1].min(), hess_data[1]-hess_data[1].min(), simple, small, exponential]  # indices 0 to 5
 # Choose start of transient dependent on template
-    transient_start_slices = np.array([20, 20, num_slices/2.0-3, num_slices/2.0-5, num_slices/2.0-1, num_slices/2.0-1.0/3.0*num_slices])
+    transient_start_slices = np.array(
+                                        [
+                                            num_slices//2 - 5,
+                                            num_slices//2 - 3,
+                                            num_slices//2 - 5,
+                                            num_slices//2 - 1,
+                                            num_slices//2 - round(1/3 * num_slices])
 
     a_eff_cta_south = pd.DataFrame(
                         OrderedDict(
@@ -180,8 +184,7 @@ def main(
         '''
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
 
-        list_cu_flare.append(cu_flare) ## nicht vrest  mitnehmen?
-
+        list_cu_flare.append(cu_flare)  # nicht vrest  mitnehmen?
 
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     df_A_eff=a_eff_cta_south,
@@ -215,9 +218,6 @@ def main(
     '''
     Write and save astropy tables for simulated cubes and transients.
     '''
-
-
-
     list_cubes = slices.reshape([-1, 3*num_slices, bins_, bins_])
     list_transients = trans_scales.reshape([-1, 3*num_slices])
     list_transient_positions = np.dstack((list_ra_transient, list_dec_transient))[0]
@@ -232,7 +232,7 @@ def main(
 
     ### start slice for templates, dependent on template index + num_slices
     ### end slice arbitrary!! Not used so far
-    trans_table['start_flare'] = transient_start_slices[transient_template_index] + num_slices  ## default 7
+    trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
