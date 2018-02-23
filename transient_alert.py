@@ -3,6 +3,8 @@ import numpy as np
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
 
+from IPython import embed
+
 '''
     Send alerts by analysing the timeseries from analyse_cube.py
     Input: astropy table (hdf5) containing one timeseries per simulation of length num_slices (60)
@@ -57,13 +59,17 @@ def get_transient_position(
     source_coordinates = SkyCoord.from_name(source)
     list_positions = []
     for trigger, cube in zip(first_trigger, list_cubes):
-        slice = cube[trigger]
-        max_pos = np.unravel_index(np.argmax(slice), slice.shape)
-        max_pos_ra = max_pos[0] * fov/bins + source_coordinates.ra.deg - fov/2
-        max_pos_dec = max_pos[1] * fov/bins + source_coordinates.dec.deg - fov/2
+        if trigger >= 0:
+            slice = cube[trigger]
+            max_pos = np.unravel_index(np.argmax(slice), slice.shape)
+            max_pos_ra = max_pos[0] * fov/bins + source_coordinates.ra.deg - fov/2
+            max_pos_dec = max_pos[1] * fov/bins + source_coordinates.dec.deg - fov/2
+        else:
+            max_pos_ra = np.nan
+            max_pos_dec = np.nan
         list_positions.append([max_pos_ra, max_pos_dec])
 
-    return max_pos
+    return list_positions
 
 
 @click.command()
