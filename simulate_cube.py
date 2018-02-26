@@ -124,7 +124,9 @@ def main(
                                             num_slices//2 - 3,
                                             num_slices//2 - 5,
                                             num_slices//2 - 1,
-                                            num_slices//2 - round(1/3 * num_slices])
+                                            num_slices//2 - round(1/3 * num_slices)
+                                        ]
+                                    )
 
     a_eff_cta_south = pd.DataFrame(
                         OrderedDict(
