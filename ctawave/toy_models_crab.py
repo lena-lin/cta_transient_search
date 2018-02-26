@@ -29,8 +29,18 @@ def simulate_steady_source_with_transient(
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
 
-    ra_transient = np.random.randint(crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2)
-    dec_transient = np.random.randint(crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2)
+    valid_transient_position = False
+    while not valid_transient_position:
+        ra_transient = np.random.randint(
+                                        crab_coord.ra.deg - fov.value / 2 + fov.value / 10,
+                                        crab_coord.ra.deg + fov.value / 2 - fov.value / 10
+                                        )
+        dec_transient = np.random.randint(
+                                        crab_coord.dec.deg - fov.value / 2 + fov.value / 10,
+                                        crab_coord.dec.deg + fov.value / 2 - fov.value / 10
+                                        )
+        if abs(ra_transient - crab_coord.ra.deg) > 1 and abs(dec_transient - crab_coord.dec.deg) > 1:
+            valid_transient_position = True
 
     slices = []
     for i in range(num_slices):
