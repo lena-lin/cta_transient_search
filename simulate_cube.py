@@ -126,22 +126,19 @@ def main(
                                         ]
                                     )
 
-    a_eff_cta_south = pd.DataFrame(
-                        OrderedDict(
+    a_eff_cta_south = OrderedDict(
                             {
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
-                                "A_eff": data_A_eff.data['EFFAREA'][0][0]
+                                "A_eff": data_A_eff.data['EFFAREA'][0]
                             }
                         )
-                      )
-    ang_res_cta_south = pd.DataFrame(
-                            OrderedDict(
+
+    psf_cta_south = OrderedDict(
                                 {
                                     "E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2,
-                                    "Ang_Res": data_ang_res.data['SIGMA_1'][0][0]
+                                    "psf_sigma": data_ang_res.data['SIGMA_1'][0]
                                 }
                             )
-                          )
 
     '''
     Start simulation
@@ -168,9 +165,9 @@ def main(
         Simulate slices containing one steady source and no transient
         '''
         slices_steady_source = simulate_steady_source(
-                    df_A_eff=a_eff_cta_south,
+                    A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
-                    df_Ang_Res=ang_res_cta_south,
+                    psf=psf_cta_south,
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
                     bins=[bins_, bins_],
@@ -187,9 +184,9 @@ def main(
         list_cu_flare.append(cu_flare)  # nicht vrest  mitnehmen?
 
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
-                    df_A_eff=a_eff_cta_south,
+                    A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
-                    df_Ang_Res=ang_res_cta_south,
+                    psf=psf_cta_south,
                     cu_flare=cu_flare,
                     transient_template=transient_templates[list_templates[i]],
                     num_slices=num_slices,
@@ -205,9 +202,9 @@ def main(
         Simulate slices containing one steady source and no transient
         '''
         slices_steady_source = simulate_steady_source(
-                    df_A_eff=a_eff_cta_south,
+                    A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
-                    df_Ang_Res=ang_res_cta_south,
+                    psf=psf_cta_south,
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
                     bins=[bins_, bins_],
