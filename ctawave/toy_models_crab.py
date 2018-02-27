@@ -43,8 +43,6 @@ def simulate_steady_source_with_transient(
         if theta > 1 and theta < 6:
             valid_transient_position = True
 
-    print(theta, ra_transient, crab_coord.ra.deg, dec_transient, crab_coord.dec.deg)
-
     slices = []
     for i in range(num_slices):
         folded_events_crab = performance.response(
