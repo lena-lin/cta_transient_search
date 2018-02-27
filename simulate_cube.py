@@ -154,13 +154,11 @@ def main(
 
     if random_transient_template is True:
         list_templates = np.random.randint(0, len(transient_templates), n_transient)
-        transient_template_filename = 'random_bla'
-        print('True')
+        transient_template_filename = 'random'
     else:
         try:
             list_templates = [transient_template_index] * n_transient
             transient_template_filename = transient_template_index
-            print('False')
         except:
             print('Transient Template does not exist')
 
@@ -187,7 +185,7 @@ def main(
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
 
         list_cu_flare.append(cu_flare)  # nicht vrest  mitnehmen?
-        embed()
+
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     df_A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
