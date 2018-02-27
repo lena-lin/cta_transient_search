@@ -32,14 +32,12 @@ astropy tables:
 
 @click.command()
 @click.option(
-    'output_path',
     '--output_path',
     type=click.Path(dir_okay=True),
     help='Directory for output file (astropy table)',
     default='build'
 )
 @click.option(
-    'irf_path',
     '--irf_path',
     type=click.Path(dir_okay=True),
     help='Directory for CTA Instrument Response Function (prod3b)',
@@ -54,16 +52,16 @@ astropy tables:
 )
 @click.option(
     '--transient_template_index',
-    '-temp',
+    '-i',
     type=click.INT,
     help='Transient template index: 0=pks, 1=hess, 2=broad gauss, 3=narrow gauss, 4=deltapeak + exponential fall',
     default='2'
 )
 @click.option(
     '--random_transient_template',
-    '-rand_temp',
+    '-r',
     help='Samples random template for transient shape, if True',
-    default='False'
+    is_flag=True
 )
 @click.option(
     '--time_per_slice',
@@ -154,13 +152,15 @@ def main(
     list_ra_transient = []
     list_dec_transient = []
 
-    if random_transient_template:
+    if random_transient_template is True:
         list_templates = np.random.randint(0, len(transient_templates), n_transient)
-        transient_template_filename = 'random'
+        transient_template_filename = 'random_bla'
+        print('True')
     else:
         try:
-            list_templates = np.ones(n_transient) * transient_template_index
+            list_templates = [transient_template_index] * n_transient
             transient_template_filename = transient_template_index
+            print('False')
         except:
             print('Transient Template does not exist')
 
@@ -187,7 +187,7 @@ def main(
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
 
         list_cu_flare.append(cu_flare)  # nicht vrest  mitnehmen?
-
+        embed()
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     df_A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,

@@ -75,7 +75,6 @@ def get_transient_position(
 @click.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
-    'output_path',
     '--output_path',
     type=click.Path(dir_okay=True),
     help='Directory for output file (astropy table)',
@@ -83,7 +82,8 @@ def get_transient_position(
 )
 @click.option(
     '--threshold',
-    '-th',
+    '-t',
+    help='Trigger threshold, default=6 (quite arbitrary at the moment!)',
     default=6
 )
 def main(

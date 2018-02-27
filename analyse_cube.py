@@ -35,7 +35,6 @@ def wavelet_denoising_cube(
 @click.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
-    'output_path',
     '--output_path',
     type=click.Path(dir_okay=True),
     help='Directory for output file (astropy table)',
@@ -43,7 +42,7 @@ def wavelet_denoising_cube(
 )
 @click.option(
     '--n_bg_slices',
-    '-n_bg',
+    '-s',
     help='Number of slices for background mean',
     default=5
 )

@@ -2,14 +2,15 @@ irf_path='/home/lena/Dokumente/CTA'
 n_transient=2
 num_slices_per_part=20
 num_slices=60
-random_transient_template=True
+
 transient_template_filename=random
+random_flag=-r
 
 
 all: build/evaluation_score.txt
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 : simulate_cube.py | build
-	python simulate_cube.py -n $(n_transient) -s $(num_slices_per_part) -rand_temp $(random_transient_template)
+	python simulate_cube.py -n $(n_transient) -s $(num_slices_per_part) $(random_flag)
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 | build
 
