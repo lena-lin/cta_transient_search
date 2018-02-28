@@ -64,6 +64,12 @@ astropy tables:
     is_flag=True
 )
 @click.option(
+    '--noise',
+    type=click.INT,
+    help='Noise for transient template in %',
+    default=0
+)
+@click.option(
     '--time_per_slice',
     '-t',
     type=click.INT,
@@ -89,6 +95,7 @@ def main(
     irf_path,
     n_transient,
     transient_template_index,
+    noise,
     random_transient_template,
     time_per_slice,
     num_slices,
@@ -110,9 +117,9 @@ def main(
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
-    simple = broad_gaussian(num_slices, 4)  # 4% noise
-    small = narrow_gaussian(num_slices, 4)
-    exponential = deltapeak_exponential(num_slices, 4)
+    simple = broad_gaussian(num_slices, noise)  # 4% noise
+    small = narrow_gaussian(num_slices, noise)
+    exponential = deltapeak_exponential(num_slices, noise)
 
     transient_templates = [pks_data[1] - pks_data[1].min(), hess_data[1]-hess_data[1].min(), simple, small, exponential]  # indices 0 to 5
 # Choose start of transient dependent on template
