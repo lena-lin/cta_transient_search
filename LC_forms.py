@@ -43,7 +43,10 @@ def broad_gaussian(Num_slices, noise_percentage):
     y_p = (Gauss(x_Gauss, Mean_params_Simple[0], Mean_params_Simple[1], Mean_params_Simple[2], Mean_params_Simple[3]) - Mean_params_Simple[3]) / Mean_params_Simple[0] ## Normalized 1
     y = np.interp(Timestamp, x_p, y_p)
     # add noise
-    noise = np.random.normal(0, noise_percentage/100.0, y.shape)
+    if noise_percentage == 0:
+        noise = np.zeros(y.shape)
+    else:
+        noise = np.random.normal(0, noise_percentage/100.0, y.shape)
     y = y + noise
     return abs(y)
 
@@ -55,7 +58,10 @@ def narrow_gaussian(Num_slices, noise_percentage):
     x_p = np.linspace(Timestamp[0], Num_slices, len(x_Gauss))
     y_p = (Gauss(x_Gauss, Mean_params_Small[0], Mean_params_Small[1], Mean_params_Small[2], Mean_params_Small[3])-Mean_params_Small[3])/Mean_params_Small[0]
     y = np.interp(Timestamp, x_p, y_p)
-    noise = np.random.normal(0, noise_percentage/100.0, y.shape)
+    if noise_percentage == 0:
+        noise = np.zeros(y.shape)
+    else:
+        noise = np.random.normal(0, noise_percentage/100.0, y.shape)
     y = y + noise
     return abs(y)
 
@@ -67,7 +73,10 @@ def deltapeak_exponential(Num_slices, noise_percentage):
     x_p = np.linspace(Timestamp[0], Num_slices, len(x_Exp))
     y_p = Step_exp(x_Exp, Mean_params_Exp[0], Mean_params_Exp[1], Mean_params_Exp[2], Mean_params_Exp[3]) / Step_exp(x_Exp, Mean_params_Exp[0], Mean_params_Exp[1], Mean_params_Exp[2], Mean_params_Exp[3]).max()
     y = np.interp(Timestamp, x_p, y_p)
-    noise = np.random.normal(0, noise_percentage/100.0, y.shape)
+    if noise_percentage == 0:
+        noise = np.zeros(y.shape)
+    else:
+        noise = np.random.normal(0, noise_percentage/100.0, y.shape)
     y = y + noise
     return abs(y)
 
