@@ -7,21 +7,21 @@ transient_template_filename=random
 random_flag=-r
 
 
-all: build/evaluation_score.txt
 
-build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 : simulate_cube.py | build
-	python simulate_cube.py -n $(n_transient) -s $(num_slices_per_part) $(random_flag)
+build/threshold_studies/n200_s60_t2_th5_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
+	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 5
 
-build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 | build
+build/threshold_studies/n200_s60_t2_th10_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
+	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 10
 
-build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 : analyse_cube.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 | build
-	python analyse_cube.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5
+build/threshold_studies/n200_s60_t2_th15_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
+	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 15
 
-build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 : transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 | build
-	python transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5
+build/threshold_studies/n200_s60_t2_th20_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
+	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 20
 
-build/evaluation_score.txt : evaluation.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 | build
-	python evaluation.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 evaluation_score.txt
+
+
 
 build:
 	mkdir -p build
