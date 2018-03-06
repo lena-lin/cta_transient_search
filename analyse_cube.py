@@ -5,7 +5,6 @@ from tqdm import tqdm
 from IPython import embed
 
 from astropy.table import Table
-from astropy.coordinates import SkyCoord
 
 from ctawave.denoise import thresholding_3d
 from ctawave.toy_models_crab import remove_steady_background
@@ -36,7 +35,6 @@ def wavelet_denoising_cube(
 @click.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
-    'output_path',
     '--output_path',
     type=click.Path(dir_okay=True),
     help='Directory for output file (astropy table)',
@@ -44,7 +42,7 @@ def wavelet_denoising_cube(
 )
 @click.option(
     '--n_bg_slices',
-    '-n_bg',
+    '-s',
     help='Number of slices for background mean',
     default=5
 )
@@ -81,18 +79,10 @@ def main(
         cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins)
         list_cubes_denoised.append(cube_denoised)
 
-    crab_coord = SkyCoord.from_name(cube_raw_table['steady_source'])
-    fov = cube_raw_table['fov']
-
     denoised_table = Table()
     denoised_table['cube_smoothed'] = list_cubes_denoised
     denoised_table['trans_factor'] = denoised_table['cube_smoothed'].max(axis=2).max(axis=2)
-    denoised_table['max_pos'] = [
-                                    [
-                                        np.unravel_index(np.argmax(slice), slice.shape) for slice in cube
-                                    ]
-                                    for cube in list_cubes_denoised
-                                ] * (fov/bins) + [crab_coord.ra.deg, crab_coord.dec.deg]
+
     denoised_table.meta = cube_raw_table.meta
     denoised_table.meta['n_bg_slices'] = n_bg_slices
     denoised_table.meta['gap'] = gap

@@ -87,14 +87,14 @@ def get_runs_per_slice(runs, ontime_max):
 )
 @click.option(
     '--source_name',
-    '-source',
+    '-s',
     type=click.STRING,
     default='Mrk501',
     help='Source Name for output file.'
 )
 @click.option(
     '--ontime_max',
-    '-ontime',
+    '-o',
     type=click.INT,
     default=95*60,
     help='Ontime per slice in seconds. Runs are added to one slice until required ontime is reached.'

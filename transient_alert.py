@@ -1,6 +1,9 @@
 import click
 import numpy as np
 from astropy.table import Table
+from astropy.coordinates import SkyCoord
+
+from IPython import embed
 
 '''
     Send alerts by analysing the timeseries from analyse_cube.py
@@ -46,10 +49,32 @@ def send_alert(table, threshold):
     return trigger_index, found_trigger, first_trigger
 
 
+def get_transient_position(
+    list_cubes,
+    first_trigger,
+    fov,
+    bins,
+    source,
+):
+    source_coordinates = SkyCoord.from_name(source)
+    list_positions = []
+    for trigger, cube in zip(first_trigger, list_cubes):
+        if trigger >= 0:
+            slice = cube[trigger]
+            max_pos = np.unravel_index(np.argmax(slice), slice.shape)
+            max_pos_ra = max_pos[0] * fov/bins + source_coordinates.ra.deg - fov/2
+            max_pos_dec = max_pos[1] * fov/bins + source_coordinates.dec.deg - fov/2
+        else:
+            max_pos_ra = np.nan
+            max_pos_dec = np.nan
+        list_positions.append([max_pos_ra, max_pos_dec])
+
+    return list_positions
+
+
 @click.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
-    'output_path',
     '--output_path',
     type=click.Path(dir_okay=True),
     help='Directory for output file (astropy table)',
@@ -57,7 +82,8 @@ def send_alert(table, threshold):
 )
 @click.option(
     '--threshold',
-    '-th',
+    '-t',
+    help='Trigger threshold, default=6 (quite arbitrary at the moment!)',
     default=6
 )
 def main(
@@ -65,22 +91,28 @@ def main(
     output_path,
     threshold
 ):
-    timeseries_table = get_smoothed_table(input_file)
-    trigger_index, found_trigger, first_trigger = send_alert(timeseries_table, threshold)
+    denoised_table = get_smoothed_table(input_file)
+    trigger_index, found_trigger, first_trigger = send_alert(denoised_table, threshold)
 
-    n_transient = timeseries_table.meta['n_transient']
-    num_slices = timeseries_table.meta['num_slices']
-    transient_template_index = timeseries_table.meta['template']
+    n_transient = denoised_table.meta['n_transient']
+    num_slices = denoised_table.meta['num_slices']
+    transient_template_index = denoised_table.meta['template']
 
     alert_table = Table()
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
     alert_table['first_trigger'] = first_trigger  # first trigger slice
+    alert_table['pred_position'] = get_transient_position(
+                                        denoised_table['cube_smoothed'],
+                                        first_trigger, denoised_table.meta['fov'],
+                                        denoised_table.meta['bins'],
+                                        denoised_table.meta['steady_source']
+                                    )
 
-    alert_table.meta = timeseries_table.meta
+    alert_table.meta = denoised_table.meta
     alert_table.meta['threshold'] = threshold
 
-    alert_table.write('{}/n{}_s{}_t{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
+    alert_table.write('{}/n{}_s{}_t{}_th{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, threshold), path='data', overwrite=True)
 
 
 if __name__ == '__main__':

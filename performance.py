@@ -5,13 +5,13 @@ from scipy import integrate
 from IPython import embed
 
 
-def interp_ang_res(E_TeV, df_Ang_Res):
+def interp_ang_res(event_E_TeV, bin_bound_E_TeV, psf_sigma):
     '''
     Interpolates the angular resolution for given energy E_Tev
     '''
-    return np.interp(E_TeV, df_Ang_Res.E_TeV, df_Ang_Res.Ang_Res)
+    return np.interp(event_E_TeV, bin_bound_E_TeV, psf_sigma)
 
-
+#TODO check calc_a_eff_factor
 def calc_a_eff_factor(df_A_eff, simulation_area):
     '''
     Returns integrated effective area divided by full impact area
@@ -23,14 +23,14 @@ def calc_a_eff_factor(df_A_eff, simulation_area):
     return integrate_a_eff/integrate_a_impact
 
 
-def interp_eff_area(E_TeV, df_A_eff):
+def interp_eff_area(event_E_TeV, bin_bound_E_TeV, a_eff):
     '''
     Interpolates effective area for given energy
     '''
-    return np.interp(E_TeV / u.TeV, df_A_eff.E_TeV, df_A_eff.A_eff)
+    return np.interp(event_E_TeV / u.TeV, bin_bound_E_TeV, a_eff)
 
 
-def response(T, N, e_min, e_max, A_eff, simulation_area):
+def response(T, N, e_min, e_max, A_eff, simulation_area, theta):
     '''
     Returns array of events (list of energies) from a source with power law distribution folded with effective area of the telescope
 
@@ -47,7 +47,7 @@ def response(T, N, e_min, e_max, A_eff, simulation_area):
     folded_events = []
     if len(events) > 0:
         for e in events:
-            a_eff_event = interp_eff_area(e, A_eff)
+            a_eff_event = interp_eff_area(e, A_eff['E_TeV'], A_eff['A_eff'][theta])
             ulimite = (a_eff_event * u.m**2) / (simulation_area)
 
             if(ulimite.value >= np.random.uniform(0, 1)):

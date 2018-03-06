@@ -6,9 +6,9 @@ import performance
 
 
 def simulate_steady_source_with_transient(
-            df_A_eff,
+            A_eff,
             fits_bg_rate,
-            df_Ang_Res,
+            psf,
             cu_flare,
             transient_template,
             num_slices=100,
@@ -29,8 +29,19 @@ def simulate_steady_source_with_transient(
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
 
-    ra_transient = np.random.randint(crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2)
-    dec_transient = np.random.randint(crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2)
+    valid_transient_position = False
+    while not valid_transient_position:
+        ra_transient = np.random.randint(
+                                        crab_coord.ra.deg - fov.value / 2 + fov.value / 10,
+                                        crab_coord.ra.deg + fov.value / 2 - fov.value / 10
+                                        )
+        dec_transient = np.random.randint(
+                                        crab_coord.dec.deg - fov.value / 2 + fov.value / 10,
+                                        crab_coord.dec.deg + fov.value / 2 - fov.value / 10
+                                        )
+        theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
+        if theta > 1 and theta < 6:
+            valid_transient_position = True
 
     slices = []
     for i in range(num_slices):
@@ -38,12 +49,14 @@ def simulate_steady_source_with_transient(
                                                 time_per_slice,
                                                 N_steady_source,
                                                 E_min, E_max,
-                                                df_A_eff,
+                                                A_eff,
                                                 sim_area,
+                                                theta=0,
                                             )
         ang_res_steady_source = performance.interp_ang_res(
                                                 folded_events_crab,
-                                                df_Ang_Res,
+                                                psf['E_TeV'],
+                                                psf['psf_sigma'][0]
                                             )
         RA_crab, DEC_crab = performance.sample_positions_steady_source(
                                                 crab_coord.ra.deg,
@@ -58,12 +71,14 @@ def simulate_steady_source_with_transient(
                                                     transient_scale[i],
                                                     E_min,
                                                     E_max,
-                                                    df_A_eff,
+                                                    A_eff,
                                                     sim_area,
+                                                    theta=int(theta)
                                                 )
             ang_res_transinet = performance.interp_ang_res(
                                                     folded_events_transient,
-                                                    df_Ang_Res
+                                                    psf['E_TeV'],
+                                                    psf['psf_sigma'][int(theta)]
                                                 )
             RA_tr, DEC_tr = performance.sample_positions_steady_source(
                                                     ra_transient,
@@ -93,9 +108,9 @@ def simulate_steady_source_with_transient(
 
 
 def simulate_steady_source(
-            df_A_eff,
+            A_eff,
             fits_bg_rate,
-            df_Ang_Res,
+            psf,
             num_slices,
             time_per_slice=30 * u.s,
             bins=[80, 80],
@@ -117,12 +132,14 @@ def simulate_steady_source(
                                             time_per_slice,
                                             N_steady_source,
                                             E_min, E_max,
-                                            df_A_eff,
+                                            A_eff,
                                             sim_area,
+                                            theta=0,
                                         )
         ang_res_steady_source = performance.interp_ang_res(
-                                            folded_events_crab,
-                                            df_Ang_Res,
+                                                folded_events_crab,
+                                                psf['E_TeV'],
+                                                psf['psf_sigma'][0]
                                         )
 
         RA_crab, DEC_crab = performance.sample_positions_steady_source(

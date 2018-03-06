@@ -8,11 +8,10 @@ from ctawave.toy_models_crab import simulate_steady_source_with_transient, simul
 from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
-from scipy import signal
 
 from IPython import embed
 
-from LC_forms import Simple_Gaussian, Small_Gaussian, Exponential
+from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential
 
 
 '''
@@ -33,14 +32,12 @@ astropy tables:
 
 @click.command()
 @click.option(
-    'output_path',
     '--output_path',
     type=click.Path(dir_okay=True),
     help='Directory for output file (astropy table)',
     default='build'
 )
 @click.option(
-    'irf_path',
     '--irf_path',
     type=click.Path(dir_okay=True),
     help='Directory for CTA Instrument Response Function (prod3b)',
@@ -55,17 +52,22 @@ astropy tables:
 )
 @click.option(
     '--transient_template_index',
-    '-temp',
+    '-i',
     type=click.INT,
-    help='Transient template index: 0=pks, 1=hess, 2=broad gauss, 3=narrow gauss, 4=deltapeak + exponential fall, None=Random',
+    help='Transient template index: 0=pks, 1=hess, 2=broad gauss, 3=narrow gauss, 4=deltapeak + exponential fall',
     default='2'
 )
 @click.option(
     '--random_transient_template',
-    '-rand_temp',
-    #type=click.BOOL,
+    '-r',
     help='Samples random template for transient shape, if True',
-    default='False'
+    is_flag=True
+)
+@click.option(
+    '--noise',
+    type=click.INT,
+    help='Noise for transient template in %',
+    default=0
 )
 @click.option(
     '--time_per_slice',
@@ -93,6 +95,7 @@ def main(
     irf_path,
     n_transient,
     transient_template_index,
+    noise,
     random_transient_template,
     time_per_slice,
     num_slices,
@@ -114,30 +117,35 @@ def main(
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
-    simple = Simple_Gaussian(num_slices, 4)  # 4% noise
-    small = Small_Gaussian(num_slices, 4)
-    exponential = Exponential(num_slices, 4)
+    simple = broad_gaussian(num_slices, noise)  # 4% noise
+    small = narrow_gaussian(num_slices, noise)
+    exponential = deltapeak_exponential(num_slices, noise)
 
-    transient_templates = [pks_data[1], hess_data[1], simple, small, exponential]  # indices 0 to 5
+    transient_templates = [pks_data[1] - pks_data[1].min(), hess_data[1]-hess_data[1].min(), simple, small, exponential]  # indices 0 to 5
 # Choose start of transient dependent on template
-    transient_start_slices = np.array([20, 20, num_slices/2.0-3, num_slices/2.0-5, num_slices/2.0-1, num_slices/2.0-1.0/3.0*num_slices])
+    transient_start_slices = np.array(
+                                        [
+                                            num_slices//2 - 5,
+                                            num_slices//2 - 3,
+                                            num_slices//2 - 5,
+                                            num_slices//2 - 1,
+                                            num_slices//2 - round(1/3 * num_slices)
+                                        ]
+                                    )
 
-    a_eff_cta_south = pd.DataFrame(
-                        OrderedDict(
+    a_eff_cta_south = OrderedDict(
                             {
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
-                                "A_eff": data_A_eff.data['EFFAREA'][0][0]
+                                "A_eff": data_A_eff.data['EFFAREA'][0]
                             }
                         )
-                      )
-    ang_res_cta_south = pd.DataFrame(
-                            OrderedDict(
+
+    psf_cta_south = OrderedDict(
                                 {
                                     "E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2,
-                                    "Ang_Res": data_ang_res.data['SIGMA_1'][0][0]
+                                    "psf_sigma": data_ang_res.data['SIGMA_1'][0]
                                 }
                             )
-                          )
 
     '''
     Start simulation
@@ -148,12 +156,12 @@ def main(
     list_ra_transient = []
     list_dec_transient = []
 
-    if random_transient_template:
+    if random_transient_template is True:
         list_templates = np.random.randint(0, len(transient_templates), n_transient)
         transient_template_filename = 'random'
     else:
         try:
-            list_templates = np.ones(n_transient) * transient_template_index
+            list_templates = [transient_template_index] * n_transient
             transient_template_filename = transient_template_index
         except:
             print('Transient Template does not exist')
@@ -164,9 +172,9 @@ def main(
         Simulate slices containing one steady source and no transient
         '''
         slices_steady_source = simulate_steady_source(
-                    df_A_eff=a_eff_cta_south,
+                    A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
-                    df_Ang_Res=ang_res_cta_south,
+                    psf=psf_cta_south,
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
                     bins=[bins_, bins_],
@@ -180,13 +188,12 @@ def main(
         '''
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
 
-        list_cu_flare.append(cu_flare) ## nicht vrest  mitnehmen?
-
+        list_cu_flare.append(cu_flare)  # nicht vrest  mitnehmen?
 
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
-                    df_A_eff=a_eff_cta_south,
+                    A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
-                    df_Ang_Res=ang_res_cta_south,
+                    psf=psf_cta_south,
                     cu_flare=cu_flare,
                     transient_template=transient_templates[list_templates[i]],
                     num_slices=num_slices,
@@ -202,9 +209,9 @@ def main(
         Simulate slices containing one steady source and no transient
         '''
         slices_steady_source = simulate_steady_source(
-                    df_A_eff=a_eff_cta_south,
+                    A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
-                    df_Ang_Res=ang_res_cta_south,
+                    psf=psf_cta_south,
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
                     bins=[bins_, bins_],
@@ -215,9 +222,6 @@ def main(
     '''
     Write and save astropy tables for simulated cubes and transients.
     '''
-
-
-
     list_cubes = slices.reshape([-1, 3*num_slices, bins_, bins_])
     list_transients = trans_scales.reshape([-1, 3*num_slices])
     list_transient_positions = np.dstack((list_ra_transient, list_dec_transient))[0]
@@ -232,7 +236,7 @@ def main(
 
     ### start slice for templates, dependent on template index + num_slices
     ### end slice arbitrary!! Not used so far
-    trans_table['start_flare'] = transient_start_slices[transient_template_index] + num_slices  ## default 7
+    trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
