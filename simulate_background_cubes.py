@@ -12,20 +12,31 @@ from IPython import embed
 
 
 @click.command()
-@click.argument('output_path', type=click.Path(file_okay=False, dir_okay=True))
+@click.option(
+    '--output_path',
+    type=click.Path(dir_okay=True),
+    help='Directory for output file (astropy table)',
+    default='build'
+)
+@click.option(
+    '--irf_path',
+    type=click.Path(dir_okay=True),
+    help='Directory for CTA Instrument Response Function (prod3b)',
+    default='/home/lena/Dokumente/CTA'
+)
 @click.option(
     '--n_cubes',
     '-n',
     type=click.INT,
     help='Number of cubes to simulate',
-    default='200'
+    default='10'
 )
 @click.option(
     '--num_slices',
     '-s',
     type=click.INT,
     help='Number of slices per cube',
-    default='10'
+    default='60'
 )
 @click.option(
     '--time_per_slice',
@@ -34,33 +45,56 @@ from IPython import embed
     help='Time per slice',
     default='30'
 )
+@click.option(
+    '--bins_',
+    '-b',
+    type=click.INT,
+    help='Number of ra/dec bins for simulated cube',
+    default='80'
+)
 def main(
     output_path,
+    irf_path,
     n_cubes,
     num_slices,
-    time_per_slice
+    time_per_slice,
+    bins_,
 ):
-    cta_perf_fits = fits.open('/home/lena/Software/ctools-1.3.0/caldb/data/cta/prod3b/bcf/South_z20_average_100s/irf_file.fits')
+    cta_perf_fits = fits.open('{}/caldb/data/cta/prod3b/bcf/South_z20_average_100s/irf_file.fits'.format(irf_path))
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
 
-    a_eff_cta_south = pd.DataFrame(OrderedDict({"E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2, "A_eff": data_A_eff.data['EFFAREA'][0][0]}))
-    ang_res_cta_south = pd.DataFrame(OrderedDict({"E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2, "Ang_Res": data_ang_res.data['SIGMA_1'][0][0]}))
+
+    a_eff_cta_south = OrderedDict(
+                            {
+                                "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
+                                "A_eff": data_A_eff.data['EFFAREA'][0]
+                            }
+                        )
+
+    psf_cta_south = OrderedDict(
+                                {
+                                    "E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2,
+                                    "psf_sigma": data_ang_res.data['SIGMA_1'][0]
+                                }
+                            )
+
     print('start')
     slices = []
     for i in tqdm(range(n_cubes)):
+
         slices_steady_source = simulate_steady_source(
-                    x_pos=6*u.deg,
-                    y_pos=6*u.deg,
-                    df_A_eff=a_eff_cta_south,
+                    A_eff=a_eff_cta_south,
                     fits_bg_rate=data_bg_rate,
-                    df_Ang_Res=ang_res_cta_south,
-                    num_slices=num_slices
+                    psf=psf_cta_south,
+                    num_slices=num_slices,
+                    time_per_slice=time_per_slice * u.s,
+                    bins=[bins_, bins_],
                     )
+
         slices.append(slices_steady_source)
 
-    embed()
     bg_table = Table()
     bg_table['bg_cubes'] = slices
     bg_table.write('{}/n{}_s{}_bg.hdf5'.format(output_path, n_cubes, num_slices), path='data', overwrite=True)
