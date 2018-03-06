@@ -80,7 +80,6 @@ def main(
                                 }
                             )
 
-    print('start')
     slices = []
     for i in tqdm(range(n_cubes)):
 
@@ -96,10 +95,18 @@ def main(
         slices.append(slices_steady_source)
 
     bg_table = Table()
+    bg_table.meta['n_cubes'] = n_cubes
+    bg_table.meta['num_slices'] = num_slices
+    bg_table.meta['time_per_slice'] = time_per_slice
+    bg_table.meta['bins'] = bins_
+    bg_table.meta['fov'] = 12 * u.deg
+    bg_table.meta['steady_source'] = 'Crab'
+
     bg_table['bg_cubes'] = slices
     bg_table.write('{}/n{}_s{}_bg.hdf5'.format(output_path, n_cubes, num_slices), path='data', overwrite=True)
 
 
+
+
 if __name__ == '__main__':
-    print('main')
     main()

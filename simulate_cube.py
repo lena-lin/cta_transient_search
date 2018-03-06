@@ -233,7 +233,6 @@ def main(
     trans_table['cu_flare'] = list_cu_flare
     trans_table['template'] = list_templates
     trans_table['position'] = list_transient_positions
-
     ### start slice for templates, dependent on template index + num_slices
     ### end slice arbitrary!! Not used so far
     trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices
@@ -241,7 +240,6 @@ def main(
 
     cube_table['cube'] = list_cubes
     cube_table['template'] = list_templates
-    cube_table['num_slices'] = 3*num_slices
     cube_table['num_flare_slices'] = num_slices
 
     cube_table.meta['n_transient'] = n_transient
