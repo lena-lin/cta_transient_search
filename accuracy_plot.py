@@ -31,6 +31,12 @@ def add_cu_flare():
             alert_table.write('cta_transient_search/build/threshold_studies/grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(t, th), path='data', overwrite=True)
 
 
+def split_accuracy_cu_flare():
+    for t in range(2,5):
+        table = 
+        masks = [()]
+
+
 def plot_accuracy(df_accuracy):
     template_names = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
     for template in range(2, 5):
