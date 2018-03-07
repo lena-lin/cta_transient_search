@@ -5,16 +5,29 @@ from astropy.table import Table
 from IPython import embed
 
 
+def get_next_trigger(trigger_index, start_flare):
+    diff_flarestart = [(np.where(trigger_index[i] == True)[0] - start_flare[i]) for i in range(len(trigger_index))]
+    closest_trigger = []
+    for s in diff_flarestart:
+        if len(s) == 0:
+            closest_trigger.append(np.nan)
+        else:
+            closest_trigger.append(s.min())
+
+    return np.asarray(closest_trigger)
+
+
 def accuracy(table_simulation, table_alert):
     if len(table_simulation) != len(table_alert):
         print('Input tables do not have the same length!')
 
     else:
         num_cubes = len(table_alert)
-        diff_flarestart = np.asarray(table_simulation['start_flare'] - table_alert['first_trigger'])
-        tp = len(diff_flarestart[abs(diff_flarestart) <= 2])
-        fn = len(diff_flarestart[np.isnan(diff_flarestart)])
-        fp = len(diff_flarestart[abs(diff_flarestart) > 2])
+        closest_trigger = get_next_trigger(table_alert['trigger_index'], table_simulation['start_flare'])
+
+        tp = np.count_nonzero([abs(closest_trigger) <= 2])
+        fn = np.count_nonzero(np.isnan(closest_trigger))
+        fp = np.count_nonzero([abs(closest_trigger) > 2])
         tn = 0
 
         return tp, fp, tn, fn, num_cubes
@@ -22,7 +35,7 @@ def accuracy(table_simulation, table_alert):
 
 def accuracy_background(table_alert_bg):
     num_cubes = len(table_alert_bg)
-    tn = np.nansum(table_alert_bg['first_trigger'].data)
+    tn = np.count_nonzero(np.isnan(table_alert_bg['first_trigger'].data))
     fp = np.count_nonzero(~np.isnan(table_alert_bg['first_trigger'].data))
     tp = 0
     fn = 0
