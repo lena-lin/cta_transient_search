@@ -20,6 +20,16 @@ def accuracy(table_simulation, table_alert):
         return tp, fp, tn, fn, num_cubes
 
 
+def accuracy_background(table_alert_bg):
+    num_cubes = len(table_alert_bg)
+    tn = np.nansum(table_alert_bg['first_trigger'].data)
+    fp = np.count_nonzero(~np.isnan(table_alert_bg['first_trigger'].data))
+    tp = 0
+    fn = 0
+
+    return tp, fp, tn, fn, num_cubes
+
+
 @click.command()
 @click.argument('input_simulation', type=click.Path(file_okay=True, dir_okay=False))
 @click.argument('input_alert', type=click.Path(file_okay=True, dir_okay=False))

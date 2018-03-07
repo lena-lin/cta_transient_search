@@ -5,14 +5,14 @@ from click.testing import CliRunner
 
 
 def main():
-    files = glob.glob('build/n200_s60_t*_trigger.hdf5')
+    files = glob.glob('build/background_studies/nNone_s60_t*_trigger.hdf5')
     runner = CliRunner()
 
     for template in tqdm(files):
         for th in range(1, 26):
-            result = runner.invoke(transient_alert.main, [template, '--output_path', 'build/threshold_studies/grid_search', '-t', str(th)])
+            result = runner.invoke(transient_alert.main, [template, '--output_path', 'build/background_studies/grid_search', '-t', str(th)])
             if result.exit_code != 0:
-                print(result.output)
+                print(result.exit_code)
 
 
 if __name__ == '__main__':

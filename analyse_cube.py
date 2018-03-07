@@ -75,7 +75,7 @@ def main(
     bins = cube_raw_table.meta['bins']
 
     list_cubes_denoised = []
-    for cube in tqdm(cube_raw_table['cube']):
+    for cube in tqdm(cube_raw_table['bg_cubes']):
         cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins)
         list_cubes_denoised.append(cube_denoised)
 

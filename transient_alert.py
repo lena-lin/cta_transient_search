@@ -95,10 +95,19 @@ def main(
     denoised_table = get_smoothed_table(input_file)
     trigger_index, found_trigger, first_trigger = send_alert(denoised_table, threshold)
 
-    n_transient = denoised_table.meta['n_transient']
+    try:
+        n_transient = denoised_table.meta['n_transient']
+    except:
+        n_transient = None
 
     num_slices = denoised_table.meta['num_slices']
-    transient_template_index = denoised_table.meta['template']
+
+    try:
+        transient_template_index = denoised_table.meta['template']
+    except:
+        transient_template_index = None
+
+    num_slices = denoised_table.meta['num_slices']
 
     alert_table = Table()
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
