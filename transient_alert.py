@@ -30,23 +30,23 @@ def get_smoothed_table(input_file):
     return table
 
 
-def get_th_index(timeseries, threshold):
-    return [i for i, diff in enumerate(timeseries) if diff > threshold]
+def get_next_trigger(trigger_index, start_flare):
+    list_trigger = []
+    for i in range(len(trigger_index)):
+        trigger = trigger_index[i]
+        if np.any(trigger):
+            list_trigger.append(abs(np.where(trigger)[0] - start_flare[i]).min())
+        else:
+            list_trigger.append(np.nan)
+
+    return np.asarray(list_trigger)
 
 
 def send_alert(table, threshold):
     trigger_index = table['trans_factor_diff'] > threshold
     found_trigger = trigger_index.sum(axis=1)
-    list_trigger = [np.where(series == True)[0] for series in trigger_index]
 
-    first_trigger = []
-    for e in list_trigger:
-        if len(e) > 0:
-            first_trigger.append(e[0])
-        else:
-            first_trigger.append(np.nan)
-
-    return trigger_index, found_trigger, first_trigger
+    return trigger_index, found_trigger
 
 
 def get_transient_position(
@@ -93,7 +93,7 @@ def main(
 ):
     #print('main', input_file, output_path, threshold)
     denoised_table = get_smoothed_table(input_file)
-    trigger_index, found_trigger, first_trigger = send_alert(denoised_table, threshold)
+    trigger_index, found_trigger = send_alert(denoised_table, threshold)
 
     try:
         n_transient = denoised_table.meta['n_transient']
@@ -112,7 +112,6 @@ def main(
     alert_table = Table()
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
-    alert_table['first_trigger'] = first_trigger  # first trigger slice
 
     # alert_table['pred_position'] = get_transient_position(
     #                                     denoised_table['cube_smoothed'],
