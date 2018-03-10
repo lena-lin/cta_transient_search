@@ -17,31 +17,54 @@ def get_next_trigger(trigger_index, start_flare):
     return np.asarray(list_trigger)
 
 
+def count_tp_fp_fn(ts, start_flare):
+    rt, = np.where(np.diff(ts.astype(int)) == 1)
+    tp = np.any(np.abs(rt - start_flare) <= 2)
+    fp = len(rt) - tp
+    if tp == 0:
+        fn = 1
+    else:
+        fn = 0
+
+    return tp, fp, fn
+
+
+def count_fp(ts):
+    rt, = np.where(np.diff(ts.astype(int)) == 1)
+    fp = len(rt)
+
+    return fp
+
+
 def metrics(table_simulation, table_alert):
     if len(table_simulation) != len(table_alert):
         print('Input tables do not have the same length!')
 
     else:
-        num_cubes = len(table_alert)
-        closest_trigger = get_next_trigger(table_alert['trigger_index'], table_simulation['start_flare'])
+        sum_tp = 0
+        sum_fp = 0
+        sum_fn = 0
+        sum_trigger = 0
+        for cube, start_flare in zip(table_alert, table_simulation['start_flare']):
+            ts = cube['trigger_index']
+            tp, fp, fn = count_tp_fp_fn(ts, start_flare)
 
-        fn = np.count_nonzero(np.isnan(closest_trigger))
-        closest_trigger = closest_trigger[~np.isnan(closest_trigger)]
-        tp = np.count_nonzero([abs(closest_trigger) <= 2])
-        fp = np.count_nonzero([abs(closest_trigger) > 2])
-        tn = 0
+            sum_tp += tp
+            sum_fp += fp
+            sum_fn += fn
+            sum_trigger += (tp + fp)
 
-        return tp, fp, tn, fn, num_cubes
+        return sum_trigger, sum_tp, sum_fp, sum_fn
 
 
 def metrics_background(table_alert_bg):
-    num_cubes = len(table_alert_bg)
-    tn = (table_alert_bg['found_trigger'] == 0).sum()
-    fp = (table_alert_bg['found_trigger'] != 0).sum()
-    tp = 0
-    fn = 0
+    sum_fp = 0
+    for cube in table_alert_bg:
+        ts = cube['trigger_index']
+        sum_fp += count_fp(ts)
 
-    return tp, fp, tn, fn, num_cubes
+    return sum_fp
+
 
 
 @click.command()

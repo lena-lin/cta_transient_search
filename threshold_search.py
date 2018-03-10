@@ -6,6 +6,7 @@ from click.testing import CliRunner
 
 def run_threshold_transients():
     files = glob.glob('build/n200_s60_t*_trigger.hdf5')
+    print(files)
     runner = CliRunner()
 
     for template_trigger in tqdm(files):
@@ -24,8 +25,8 @@ def run_threshold_background():
             print(result.exit_code)
 
 def main():
-    #run_threshold_transients()
-    run_threshold_background()
+    run_threshold_transients()
+    ##run_threshold_background()
 
 if __name__ == '__main__':
     main()

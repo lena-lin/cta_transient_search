@@ -10,28 +10,30 @@ plt.style.use('ggplot')
 
 
 def get_metrics_dataframe():
-    df_metrics = pd.DataFrame(columns=['Template', 'Threshold', 'TP-Rate', 'FN-Rate', 'FP-Rate', 'TP', 'FN', 'num_cubes'])
+    df_metrics = pd.DataFrame(columns=['Template', 'Threshold', 'TP-Rate', 'FN-Rate', 'FP-Rate', 'TP', 'FN', 'FP', 'num_cubes'])
     for template in range(2, 5):
         input_simulation = Table.read('build/n200_s60_t{}_trans.hdf5'.format(template), path='data')
         for th in range(1, 26):
-            input_alert = Table.read('build/threshold_studies/grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(template, th), path='data')
 
-            tp, fp, tn, fn, num_cubes = evaluation.metrics(input_simulation, input_alert)
-            df_metrics = df_metrics.append({'Template': template, 'Threshold': th, 'TP-Rate': tp/num_cubes, 'FN-Rate': fn/num_cubes, 'FP-Rate': fp/num_cubes, 'TP': tp, 'FN': fn, 'num_cubes': num_cubes}, ignore_index=True)
+            input_alert = Table.read('build/threshold_studies/grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(template, th), path='data')
+            num_cubes = input_alert.meta['n_transient']
+
+            sum_trigger, tp, fp, fn = evaluation.metrics(input_simulation, input_alert)
+            df_metrics = df_metrics.append({'Template': template, 'Threshold': th, 'TP-Rate': tp/num_cubes, 'FN-Rate': fn/num_cubes, 'TP': tp, 'FN': fn, 'FP': fp, 'num_cubes': num_cubes}, ignore_index=True)
             # print('TP-Rate: {} \n FN-Rate: {} \n FP-Rate: {}'.format(tp/num_cubes, fn/num_cubes, fp/num_cubes))
 
     return df_metrics
 
 
 def get_metrics_dataframe_background():
-    df_metrics = pd.DataFrame(columns=['Threshold', 'TN-Rate', 'FP-Rate', 'TN', 'FP', 'num_cubes'])
+    df_metrics = pd.DataFrame(columns=['Threshold', 'FP', 'num_cubes'])
 
     for th in range(1, 26):
         input_alert = Table.read('build/background_studies/grid_search/nNone_s60_tNone_th{}_alert.hdf5'.format(th), path='data')
+        num_cubes = input_alert.meta['n_cubes']
 
-        tp, fp, tn, fn, num_cubes = evaluation.metrics_background(input_alert)
-        df_metrics = df_metrics.append({'Threshold': th, 'TN-Rate': tn/num_cubes, 'FP-Rate': fp/num_cubes, 'TN': tn, 'FP': fp, 'num_cubes': num_cubes}, ignore_index=True)
-        # print('TP-Rate: {} \n FN-Rate: {} \n FP-Rate: {}'.format(tp/num_cubes, fn/num_cubes, fp/num_cubes))
+        fp = evaluation.metrics_background(input_alert)
+        df_metrics = df_metrics.append({'Threshold': th, 'FP': fp, 'num_cubes': num_cubes}, ignore_index=True)
 
     return df_metrics
 
