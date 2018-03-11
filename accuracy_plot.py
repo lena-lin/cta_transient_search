@@ -195,6 +195,29 @@ def plot_precision_recall(df_signal, df_background):
         plt.close()
 
 
+def plot_tp(df, threshold=None):
+    fig, ax = plt.subplots()
+    for t in range(2,5):
+        ax.plot(df[df['Template'] == 2]['Threshold'], df[df['Template'] == t]['TP']/200, label=templates[t-2])
+    ax.set_xlabel('Threshold in a. u.')
+    ax.set_ylabel('True Positive Rate')
+    ax.legend()
+    if threshold is not None:
+        ax.axvline(threshold, color='k', linestyle='--')
+
+    plt.savefig('build/plots/true_positive_rate.pdf')
+
+
+def plot_fp(df_bg, hours):
+    fig, ax = plt.subplots()
+    ax.plot(df_bg['Threshold'], df['FP']/hours)
+    ax.set_xlabel('Threshold in a. u.')
+    ax.set_ylabel('FP per hour')
+
+    plt.savefig('build/plots/fp_per_hour.pdf')
+    
+
+
 def main():
     df_background = get_metrics_dataframe_background()
     df_signal = get_metrics_dataframe()
