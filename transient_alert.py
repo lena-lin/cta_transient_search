@@ -112,6 +112,7 @@ def main(
     alert_table = Table()
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
+    alert_table['trans_factor_diff'] = denoised_table['trans_factor_diff'] # time trigger criterion
 
     # alert_table['pred_position'] = get_transient_position(
     #                                     denoised_table['cube_smoothed'],
