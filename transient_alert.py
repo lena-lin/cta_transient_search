@@ -102,12 +102,12 @@ def main(
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
     alert_table['first_trigger'] = first_trigger  # first trigger slice
-    alert_table['pred_position'] = get_transient_position(
-                                        denoised_table['cube_smoothed'],
-                                        first_trigger, denoised_table.meta['fov'],
-                                        denoised_table.meta['bins'],
-                                        denoised_table.meta['steady_source']
-                                    )
+    # alert_table['pred_position'] = get_transient_position(
+    #                                     denoised_table['cube_smoothed'],
+    #                                     first_trigger, denoised_table.meta['fov'],
+    #                                     denoised_table.meta['bins'],
+    #                                     denoised_table.meta['steady_source']
+    #                                 )
 
     alert_table.meta = denoised_table.meta
     alert_table.meta['threshold'] = threshold
