@@ -102,7 +102,7 @@ def main(
     bg_table.meta['fov'] = 12 * u.deg
     bg_table.meta['steady_source'] = 'Crab'
 
-    bg_table['bg_cubes'] = slices
+    bg_table['cubes'] = slices
     bg_table.write('{}/n{}_s{}_bg.hdf5'.format(output_path, n_cubes, num_slices), path='data', overwrite=True)
 
 
