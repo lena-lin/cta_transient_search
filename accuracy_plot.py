@@ -196,6 +196,7 @@ def plot_precision_recall(df_signal, df_background):
 
 
 def plot_tp(df, threshold=None):
+    templates = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
     fig, ax = plt.subplots()
     for t in range(2,5):
         ax.plot(df[df['Template'] == 2]['Threshold'], df[df['Template'] == t]['TP']/200, label=templates[t-2])
@@ -205,17 +206,19 @@ def plot_tp(df, threshold=None):
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
-    plt.savefig('build/plots/true_positive_rate.pdf')
+    plt.savefig('build/plots/true_positive_rate.png')
 
 
-def plot_fp(df_bg, hours):
+def plot_fp(df_bg, hours, threshold=None):
     fig, ax = plt.subplots()
-    ax.plot(df_bg['Threshold'], df['FP']/hours)
+    ax.plot(df_bg['Threshold'], df_bg['FP']/hours)
     ax.set_xlabel('Threshold in a. u.')
     ax.set_ylabel('FP per hour')
+    if threshold is not None:
+        ax.axvline(threshold, color='k', linestyle='--')
 
-    plt.savefig('build/plots/fp_per_hour.pdf')
-    
+    plt.savefig('build/plots/fp_per_hour.png')
+
 
 
 def main():
