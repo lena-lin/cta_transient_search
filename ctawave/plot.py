@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from astropy.coordinates import SkyCoord
+import astropy.units as u
 plt.style.use('ggplot')
 import numpy as np
 
@@ -72,14 +74,22 @@ class TransientPlotter(object):
 
 class CubePlotter(object):
 
-    def __init__(self, cube, cmap='viridis'):
+    def __init__(self, cube, source, fov=12 * u.deg, vmax=None, cmap='viridis'):
+        crab_coord = SkyCoord.from_name(source)
         fig, ax = plt.subplots(1, 1)
         self.fig = fig
 
-        # ax.tick_params(labelbottom='off', labelleft='off')
+        ra_ticks = np.linspace(crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2, cube.shape[0])
+        dec_ticks = np.linspace(crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2, cube.shape[1])
+        X, Y = np.meshgrid(ra_ticks, dec_ticks)
 
-        vmax = cube.max()
-        self.quad = ax.pcolormesh(cube[0], cmap=cmap, vmin=0, vmax=vmax)
+        if vmax == None:
+            vmax = cube.max()
+
+        ax.set_aspect(1)
+        ax.set_xlabel('RA')
+        ax.set_ylabel('Dec')
+        self.quad = ax.pcolormesh(X, Y, cube, cmap=cmap, vmin=0, vmax=vmax)
 
         self.cube = cube
 
