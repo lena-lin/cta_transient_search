@@ -89,6 +89,7 @@ def main(
     denoised_table.write('{}/n{}_s{}_t{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
     trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2)})
+    trans_factor_table.meta = cube_raw_table.meta
     trans_factor_table.write('{}/n{}_s{}_t{}_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
 
