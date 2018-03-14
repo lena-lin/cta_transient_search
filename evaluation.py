@@ -78,13 +78,13 @@ def main(
 ):
         table_simulation = Table.read(input_simulation, path='data')
         table_alert = Table.read(input_alert, path='data')
-        tp, fp, tn, fn, num_cubes = accuracy(table_simulation, table_alert)
+        num_cubes = table_simulation.meta['n_transient']
+        sum_trigger, tp, fp, fn = metrics(table_simulation, table_alert)
 
-        print('TP-Rate: {} \n FN-Rate: {} \n FP-Rate: {}'.format(tp/num_cubes, fn/num_cubes, fp/num_cubes))
-        print('TP: {} \n FN: {} \n FP: {} \n TN: {}'.format(tp, fn, fp, tn))
-        f = open('build/{}'.format(output_file), 'w')
-        f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {} \n TN: {}'.format(num_cubes, tp, fn, fp, tn))
-        f.close()
+        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        # f = open('build/{}'.format(output_file), 'w')
+        # f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {} \n TN: {}'.format(num_cubes, tp, fn, fp, tn))
+        # f.close()
 
 
 if __name__ == '__main__':
