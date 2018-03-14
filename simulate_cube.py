@@ -102,8 +102,6 @@ def main(
     bins_,
     cu_min=0.1,
     cu_max=7,
-    duration_min=10,
-    duration_max=100,
 ):
     '''
     Load CTA IRFs and transient template
