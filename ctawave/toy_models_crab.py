@@ -45,6 +45,7 @@ def simulate_steady_source_with_transient(
 
     ra_transient = crab_coord.ra.deg - fov.value / 4
     dec_transient = crab_coord.dec.deg - fov.value / 4
+    theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
 
     slices = []
     for i in range(num_slices):
