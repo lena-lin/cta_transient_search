@@ -45,9 +45,9 @@ def get_metrics_dataframe_brightness():
         input_simulation = Table.read(f, path='data')
         for th in range(1, 26):
             input_alert = Table.read('build/threshold_studies/brightness/n{}_s60_tAll_cu{}_th{}.hdf5'.format(input_simulation.meta['n_cubes'], input_simulation.meta['cu_range'], th), path='data')
-
-            tp, fp, tn, fn, num_cubes = evaluation.metrics(input_simulation, input_alert)
-            df_metrics = df_metrics.append({'Brightness': input_simulation.meta['cu_range'], 'Threshold': th, 'TP-Rate': tp/num_cubes, 'FP-Rate': fp/num_cubes, 'TP': tp, 'FP': fn, 'num_cubes': num_cubes}, ignore_index=True)
+            num_cubes = input_alert.meta['n_transient']
+            sum_trigger, tp, fp, fn = evaluation.metrics(input_simulation, input_alert)
+            df_metrics = df_metrics.append({'Brightness': input_simulation.meta['cu_range'], 'Threshold': th, 'TP-Rate': tp/num_cubes, 'FP-Rate': fp/num_cubes, 'TP': tp, 'FN': fn, 'FP': fp, 'num_cubes': tp+fn}, ignore_index=True)
             # print('TP-Rate: {} \n FN-Rate: {} \n FP-Rate: {}'.format(tp/num_cubes, fn/num_cubes, fp/num_cubes))
 
     return df_metrics
@@ -85,21 +85,6 @@ def group_trans_tables_by_cu_flare():
         cu_1_table.meta['n_cubes'] = len(cu_1_table)
         cu_1_table.meta['cu_range'] = cu_max
         cu_1_table.write('build/threshold_studies/brightness/n{}_s60_tAll_cu{}_trans.hdf5'.format(len(cu_1_table), cu_max), path='data', overwrite=True)
-
-
-def plot_roc_brightness(df_cu, df_fp):
-    fig, ax = plt.subplots()
-    for cu in range(1, 8):
-        ax.plot(df_fp['FP-Rate'], df_cu[df_cu['Brightness'] == cu]['TP-Rate'], label='{}-{}'.format(cu-1, cu))
-    ax.set_ylabel('TP-Rate')
-    ax.set_xlabel('FP-Rate')
-    ax.set_title('ROC')
-    ax.set_xlim(0,1)
-    ax.set_ylim(0,1)
-    ax.legend()
-
-    plt.savefig('build/plots/roc_brightness.pdf')
-    plt.close()
 
 
 def plot_roc_templates(df_tp, df_fp):
@@ -180,8 +165,8 @@ def plot_precision_recall(df_signal, df_background):
         tn = df_background['TN'].values
         fp = df_background['FP'].values
         p = df_signal[df_signal['Template'] == t]['num_cubes'].values
-        n  = df_background['num_cubes'].values
-        #embed()
+        n = df_background['num_cubes'].values
+
         ax.plot(df_signal[df_signal['Template'] == t]['Threshold'], tp / (tp + fp), label='Precision')
         ax.plot(df_signal[df_signal['Template'] == t]['Threshold'], tp / (tp + fn), label='Recall')
 
@@ -198,7 +183,7 @@ def plot_precision_recall(df_signal, df_background):
 def plot_tp(df, threshold=None):
     templates = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
     fig, ax = plt.subplots()
-    for t in range(2,5):
+    for t in range(2, 5):
         ax.plot(df[df['Template'] == 2]['Threshold'], df[df['Template'] == t]['TP']/200, label=templates[t-2])
     ax.set_xlabel('Threshold in a. u.')
     ax.set_ylabel('True Positive Rate')
@@ -220,15 +205,30 @@ def plot_fp(df_bg, hours, threshold=None):
     plt.savefig('build/plots/fp_per_hour.png')
 
 
+def plot_tp_brightness(df):
+    fig, ax = plt.subplots()
+    for cu in range(1, 8):
+        df_cu = df[df['Brightness'] == cu]
+        ax.plot(df_cu['Threshold'], df_cu['TP']/df_cu['num_cubes'], label='{}cu'.format(cu))
+        ax.set_ylim(0, 1)
+        ax.legend(loc=1)
+        ax.set_xlabel('Threshold in a. u.')
+        ax.set_ylabel('True Positive Rate')
+
+    plt.savefig('build/plots/tp_brightness.pdf')
+    plt.close()
+
 
 def main():
     df_background = get_metrics_dataframe_background()
     df_signal = get_metrics_dataframe()
+    df_brightness = get_metrics_dataframe_brightness()
     #embed()
-    # plot_roc_templates(df_signal, df_background)
+
     # plot_metrics(df_signal, df_background)
     # plot_accuracy(df_signal, df_background)
-    plot_precision_recall(df_signal, df_background)
+    # plot_precision_recall(df_signal, df_background)
+    plot_tp_brightness(df_brightness)
 
 
 if __name__ == '__main__':
