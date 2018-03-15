@@ -187,11 +187,14 @@ def plot_tp(df, threshold=None):
         ax.plot(df[df['Template'] == 2]['Threshold'], df[df['Template'] == t]['TP']/200, label=templates[t-2])
     ax.set_xlabel('Threshold in a. u.')
     ax.set_ylabel('True Positive Rate')
+    ax.set_ylim(0, 1)
     ax.legend()
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
-    plt.savefig('build/plots/true_positive_rate.png')
+        plt.savefig('build/plots/true_positive_rate_th.pdf')
+    else:
+        plt.savefig('build/plots/true_positive_rate.pdf')
 
 
 def plot_fp(df_bg, hours, threshold=None):
@@ -199,6 +202,7 @@ def plot_fp(df_bg, hours, threshold=None):
     ax.plot(df_bg['Threshold'], df_bg['FP']/hours)
     ax.set_xlabel('Threshold in a. u.')
     ax.set_ylabel('FP per hour')
+    ax.set_ylim(0, 1)
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
@@ -215,20 +219,25 @@ def plot_tp_brightness(df):
         ax.set_xlabel('Threshold in a. u.')
         ax.set_ylabel('True Positive Rate')
 
-    plt.savefig('build/plots/tp_brightness.pdf')
+    plt.savefig('build/plots/tp_brightness_w3.pdf')
     plt.close()
 
 
 def main():
+    # add_cu_flare()
+    # group_alert_tables_by_cu_flare()
+    # group_trans_tables_by_cu_flare()
     df_background = get_metrics_dataframe_background()
     df_signal = get_metrics_dataframe()
     df_brightness = get_metrics_dataframe_brightness()
-    #embed()
+    embed()
 
     # plot_metrics(df_signal, df_background)
     # plot_accuracy(df_signal, df_background)
     # plot_precision_recall(df_signal, df_background)
     plot_tp_brightness(df_brightness)
+    # plot_tp(df_signal, threshold=6)
+
 
 
 if __name__ == '__main__':
