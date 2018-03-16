@@ -77,6 +77,18 @@ astropy tables:
     default='30'
 )
 @click.option(
+    '--cu_min',
+    type=click.FLOAT,
+    help='Minimum transient brightness in crab units',
+    default=0.1
+)
+@click.option(
+    '--cu_max',
+    type=click.FLOAT,
+    help='Maximum transient brightness in crab units',
+    default=7
+)
+@click.option(
     '--num_slices',
     '-s',
     type=click.INT,
@@ -100,8 +112,8 @@ def main(
     time_per_slice,
     num_slices,
     bins_,
-    cu_min=0.1,
-    cu_max=7,
+    cu_min,
+    cu_max,
 ):
     '''
     Load CTA IRFs and transient template
