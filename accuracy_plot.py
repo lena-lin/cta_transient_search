@@ -181,10 +181,20 @@ def plot_precision_recall(df_signal, df_background):
 
 
 def plot_tp(df, threshold=None):
+
+    font = {'family': 'serif',
+        'color':  'darkred',
+        'weight': 'normal',
+        'size': 16,
+        }
     templates = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
     fig, ax = plt.subplots()
     for t in range(2, 5):
         ax.plot(df[df['Template'] == 2]['Threshold'], df[df['Template'] == t]['TP']/200, label=templates[t-2])
+    ax.text(0.95, 0.01, 'PRELIMINARY',
+        verticalalignment='bottom', horizontalalignment='right',
+        transform=ax.transAxes,
+        color='grey', fontsize=20)
     ax.set_xlabel('Threshold in a. u.')
     ax.set_ylabel('True Positive Rate')
     ax.set_ylim(0, 1)
@@ -202,11 +212,16 @@ def plot_fp(df_bg, hours, threshold=None):
     ax.plot(df_bg['Threshold'], df_bg['FP']/hours)
     ax.set_xlabel('Threshold in a. u.')
     ax.set_ylabel('FP per hour')
-    ax.set_ylim(0, 1)
+    ax.text(0.95, 0.04, 'PRELIMINARY',
+        verticalalignment='bottom', horizontalalignment='right',
+        transform=ax.transAxes,
+        color='grey', fontsize=20)
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
-    plt.savefig('build/plots/fp_per_hour.png')
+        plt.savefig('build/plots/fp_per_hour_th.pdf')
+    else:
+        plt.savefig('build/plots/fp_per_hour.pdf')
 
 
 def plot_tp_brightness(df):
@@ -218,7 +233,10 @@ def plot_tp_brightness(df):
         ax.legend(loc=1)
         ax.set_xlabel('Threshold in a. u.')
         ax.set_ylabel('True Positive Rate')
-
+    ax.text(0.95, 0.06, 'PRELIMINARY',
+        verticalalignment='bottom', horizontalalignment='right',
+        transform=ax.transAxes,
+        color='grey', fontsize=20)
     plt.savefig('build/plots/tp_brightness_w3.pdf')
     plt.close()
 
@@ -230,13 +248,16 @@ def main():
     df_background = get_metrics_dataframe_background()
     df_signal = get_metrics_dataframe()
     df_brightness = get_metrics_dataframe_brightness()
-    embed()
+
 
     # plot_metrics(df_signal, df_background)
     # plot_accuracy(df_signal, df_background)
     # plot_precision_recall(df_signal, df_background)
     plot_tp_brightness(df_brightness)
     # plot_tp(df_signal, threshold=6)
+    # plot_tp(df_signal)
+    # plot_fp(df_background, 83.33333, threshold=6)
+    # plot_fp(df_background, 83.33333)
 
 
 
