@@ -19,7 +19,7 @@ def get_next_trigger(trigger_index, start_flare):
 
 def count_tp_fp_fn(ts, start_flare):
     rt, = np.where(np.diff(ts.astype(int)) == 1)
-    tp = np.any(np.abs(rt - start_flare) <= 2)
+    tp = np.any(np.abs(rt - start_flare) <= 3)
     fp = len(rt) - tp
     if tp == 0:
         fn = 1
