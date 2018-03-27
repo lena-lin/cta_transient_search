@@ -29,7 +29,6 @@ build/evaluation_score.txt: evaluation.py  | build
 	python evaluation.py \
 	  build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 \
 		build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 \
-		evaluation_score.txt
 
 build:
 	mkdir -p build
