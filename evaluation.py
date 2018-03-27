@@ -70,20 +70,25 @@ def metrics_background(table_alert_bg):
 @click.command()
 @click.argument('input_simulation', type=click.Path(file_okay=True, dir_okay=False))
 @click.argument('input_alert', type=click.Path(file_okay=True, dir_okay=False))
-@click.argument('output_file', type=click.Path(file_okay=True, dir_okay=False))
+@click.option(
+    '--output_path',
+    type=click.Path(dir_okay=True),
+    help='Directory for output file (astropy table)',
+    default='build'
+)
 def main(
     input_simulation,
     input_alert,
-    output_file
+    output_path,
 ):
         table_simulation = Table.read(input_simulation, path='data')
         table_alert = Table.read(input_alert, path='data')
-        tp, fp, tn, fn, num_cubes = accuracy(table_simulation, table_alert)
+        num_cubes = table_simulation.meta['n_transient']
+        sum_trigger, tp, fp, fn = metrics(table_simulation, table_alert)
 
-        print('TP-Rate: {} \n FN-Rate: {} \n FP-Rate: {}'.format(tp/num_cubes, fn/num_cubes, fp/num_cubes))
-        print('TP: {} \n FN: {} \n FP: {} \n TN: {}'.format(tp, fn, fp, tn))
-        f = open('build/{}'.format(output_file), 'w')
-        f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {} \n TN: {}'.format(num_cubes, tp, fn, fp, tn))
+        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        f = open('{}/evaluation_{}.txt'.format(output_path, num_cubes), 'w')
+        f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
         f.close()
 
 

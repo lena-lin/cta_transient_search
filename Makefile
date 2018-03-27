@@ -1,5 +1,5 @@
 irf_path='/home/lena/Documents/CTA'
-n_transient=2
+n_transient=10
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random

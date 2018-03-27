@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from astropy.coordinates import SkyCoord
+import astropy.units as u
 plt.style.use('ggplot')
 import numpy as np
 
@@ -17,26 +19,42 @@ class TransientPlotter(object):
 
         return fig
 
-    def __init__(self, left_cube, right_cube, trans_factor, trans_scale, time_per_slice, cmap='viridis'):
+    def __init__(self, left_cube, right_cube, trans_factor, time_per_slice, source='Crab', fov=12*u.deg, cmap='viridis'):
+        crab_coord = SkyCoord.from_name(source)
         self.fig = plt.figure(figsize=(12, 10))
+        ra_ticks = np.linspace(crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2, 9).astype(int)
+        dec_ticks = np.linspace(crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2, 9).astype(int)
+        X, Y = np.meshgrid(ra_ticks, dec_ticks)
 
         ax1 = plt.subplot2grid((2, 2), (0, 0))
         ax2 = plt.subplot2grid((2, 2), (0, 1))
         ax3 = plt.subplot2grid((2, 2), (1, 0), colspan=2)
         # ax4 = plt.subplot2grid((3, 2), (1, 0), colspan=2)
 
-        ax1.tick_params(labelbottom='off', labelleft='off')
-        ax2.tick_params(labelbottom='off', labelleft='off')
+        # ax1.tick_params(labelbottom='off', labelleft='off')
+        # ax2.tick_params(labelbottom='off', labelleft='off')
 
-        # ax3.set_xticks(ax3.get_xticks() * time_per_slice)
-        ax3.set_xlabel('Time Step in a.u.')
+        ax1.set_aspect(1)
+        ax1.set_xlabel('RA')
+        ax1.set_ylabel('Dec')
+        ax1.set_xticklabels(ra_ticks)
+        ax1.set_yticklabels(dec_ticks)
+
+        ax2.set_aspect(1)
+        ax2.set_xlabel('RA')
+        ax2.set_ylabel('Dec')
+        ax2.set_xticklabels(ra_ticks)
+        ax2.set_yticklabels(dec_ticks)
+
+        ax3.set_xticklabels(np.linspace(0, 60*time_per_slice, 7))
+        ax3.set_xlabel('Observation Time in s')
         ax3.set_ylabel('Trigger Criterion in a.u.')
 
         # ax4.set_ylabel('Transient Scale Factor in a.u.')
 
         vmax = left_cube.max()
-        self.l_quad = ax1.pcolormesh(left_cube[0], cmap=cmap, vmin=0, vmax=vmax/5)
-        self.r_quad = ax2.pcolormesh(left_cube[0], cmap=cmap, vmin=0, vmax=vmax/5)
+        self.l_quad = ax1.pcolormesh(left_cube[0], cmap=cmap, vmin=0, vmax=vmax/2)
+        self.r_quad = ax2.pcolormesh(left_cube[0], cmap=cmap, vmin=0, vmax=vmax/2)
 
         self.line,  = ax3.plot(0, trans_factor[0])
         # self.trans,  = ax4.plot(0, trans_scale[0])
@@ -59,7 +77,6 @@ class TransientPlotter(object):
         self.x.append(t)
         self.y.append(self.trans_factor[t])
         # self.y4.append(self.trans_scale[t])
-
         l = self.left_cube[t]
         r = self.right_cube[t]
         self.l_quad.set_array(l.ravel())
@@ -72,14 +89,22 @@ class TransientPlotter(object):
 
 class CubePlotter(object):
 
-    def __init__(self, cube, cmap='viridis'):
+    def __init__(self, cube, source, fov=12 * u.deg, vmax=None, cmap='viridis'):
+        crab_coord = SkyCoord.from_name(source)
         fig, ax = plt.subplots(1, 1)
         self.fig = fig
 
-        # ax.tick_params(labelbottom='off', labelleft='off')
+        ra_ticks = np.linspace(crab_coord.ra.deg - fov.value / 2, crab_coord.ra.deg + fov.value / 2, cube.shape[0])
+        dec_ticks = np.linspace(crab_coord.dec.deg - fov.value / 2, crab_coord.dec.deg + fov.value / 2, cube.shape[1])
+        X, Y = np.meshgrid(ra_ticks, dec_ticks)
 
-        vmax = cube.max()
-        self.quad = ax.pcolormesh(cube[0], cmap=cmap, vmin=0, vmax=vmax)
+        if vmax == None:
+            vmax = cube.max()
+
+        ax.set_aspect(1)
+        ax.set_xlabel('RA')
+        ax.set_ylabel('Dec')
+        self.quad = ax.pcolormesh(X, Y, cube, cmap=cmap, vmin=0, vmax=vmax)
 
         self.cube = cube
 
