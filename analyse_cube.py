@@ -20,13 +20,16 @@ def wavelet_denoising_cube(
             gap = gap + (cube_raw.shape[0] - n_bg_slices - gap) % 4
         cube = remove_steady_background(cube_raw, n_bg_slices, gap)
 
+        cube_smoothed = []
         # get wavelet coefficients
+        for slice in cube:
+            coeffs = pywt.swtn(data=slice, wavelet='bior1.3', level=2, start_level=0)
 
-        coeffs = pywt.swtn(data=cube, wavelet='bior1.3', level=2, start_level=0)
+        # remove noisy coefficents
+            ct = thresholding_3d(coeffs, k=10)
+            slice_smoothed = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
+            cube_smoothed.append(slice_smoothed)
 
-        # remove noisy coefficents.
-        ct = thresholding_3d(coeffs, k=30)
-        cube_smoothed = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
         cube_smoothed = np.concatenate([np.zeros([len(cube_raw) - len(cube_smoothed), bins, bins]), cube_smoothed])
 
         return cube_smoothed

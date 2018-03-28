@@ -202,9 +202,9 @@ def plot_tp(df, threshold=None):
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
-        plt.savefig('build/plots/true_positive_rate_th.pdf')
+        plt.savefig('build/plots/true_positive_rate_th_k0.pdf')
     else:
-        plt.savefig('build/plots/true_positive_rate.pdf')
+        plt.savefig('build/plots/true_positive_rate_k0.pdf')
 
 
 def plot_fp(df_bg, hours, threshold=None):
@@ -219,9 +219,9 @@ def plot_fp(df_bg, hours, threshold=None):
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
-        plt.savefig('build/plots/fp_per_hour_th.pdf')
+        plt.savefig('build/plots/fp_per_hour_th_k0.pdf')
     else:
-        plt.savefig('build/plots/fp_per_hour.pdf')
+        plt.savefig('build/plots/fp_per_hour_k0.pdf')
 
 
 def plot_tp_brightness(df):
@@ -237,7 +237,7 @@ def plot_tp_brightness(df):
         verticalalignment='bottom', horizontalalignment='right',
         transform=ax.transAxes,
         color='grey', fontsize=20)
-    plt.savefig('build/plots/tp_brightness_w3.pdf')
+    plt.savefig('build/plots/tp_brightness_k0.pdf')
     plt.close()
 
 
