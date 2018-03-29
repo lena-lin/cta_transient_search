@@ -9,13 +9,13 @@ from IPython import embed
 plt.style.use('ggplot')
 
 
-def get_metrics_dataframe():
+def get_metrics_dataframe(path='build/threshold_studies/grid_search/'):
     df_metrics = pd.DataFrame(columns=['Template', 'Threshold', 'TP-Rate', 'FN-Rate', 'FP-Rate', 'TP', 'FN', 'FP', 'num_cubes'])
     for template in range(2, 5):
         input_simulation = Table.read('build/n200_s60_t{}_trans.hdf5'.format(template), path='data')
         for th in range(1, 26):
 
-            input_alert = Table.read('build/threshold_studies/grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(template, th), path='data')
+            input_alert = Table.read('{}n200_s60_t{}_th{}_alert.hdf5'.format(path, template, th), path='data')
             num_cubes = input_alert.meta['n_transient']
 
             sum_trigger, tp, fp, fn = evaluation.metrics(input_simulation, input_alert)
@@ -25,11 +25,11 @@ def get_metrics_dataframe():
     return df_metrics
 
 
-def get_metrics_dataframe_background():
+def get_metrics_dataframe_background(path='build/background_studies/grid_search/'):
     df_metrics = pd.DataFrame(columns=['Threshold', 'FP', 'num_cubes'])
 
     for th in range(1, 26):
-        input_alert = Table.read('build/background_studies/grid_search/nNone_s60_tNone_th{}_alert.hdf5'.format(th), path='data')
+        input_alert = Table.read('{}nNone_s60_tNone_th{}_alert.hdf5'.format(path, th), path='data')
         num_cubes = input_alert.meta['n_cubes']
 
         fp = evaluation.metrics_background(input_alert)
@@ -38,13 +38,13 @@ def get_metrics_dataframe_background():
     return df_metrics
 
 
-def get_metrics_dataframe_brightness():
+def get_metrics_dataframe_brightness(path='build/threshold_studies/brightness/'):
     df_metrics = pd.DataFrame(columns=['Brightness', 'Threshold', 'TP-Rate', 'FP-Rate', 'TP', 'FP', 'num_cubes'])
-    sim_files = glob.glob('build/threshold_studies/brightness/*_trans.hdf5')
+    sim_files = glob.glob('{}*_trans.hdf5'.format(path))
     for f in sim_files:
         input_simulation = Table.read(f, path='data')
         for th in range(1, 26):
-            input_alert = Table.read('build/threshold_studies/brightness/n{}_s60_tAll_cu{}_th{}.hdf5'.format(input_simulation.meta['n_cubes'], input_simulation.meta['cu_range'], th), path='data')
+            input_alert = Table.read('{}n{}_s60_tAll_cu{}_th{}.hdf5'.format(path, input_simulation.meta['n_cubes'], input_simulation.meta['cu_range'], th), path='data')
             num_cubes = input_alert.meta['n_transient']
             sum_trigger, tp, fp, fn = evaluation.metrics(input_simulation, input_alert)
             df_metrics = df_metrics.append({'Brightness': input_simulation.meta['cu_range'], 'Threshold': th, 'TP-Rate': tp/num_cubes, 'FP-Rate': fp/num_cubes, 'TP': tp, 'FN': fn, 'FP': fp, 'num_cubes': tp+fn}, ignore_index=True)
@@ -53,28 +53,28 @@ def get_metrics_dataframe_brightness():
     return df_metrics
 
 
-def add_cu_flare():
+def add_cu_flare(path='build/threshold_studies/grid_search/'):
     for t in range(2, 5):
         trans_table = Table.read('build/n200_s60_t{}_trans.hdf5'.format(t), path='data')
         for th in range(1, 26):
-            alert_table = Table.read('build/threshold_studies/grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(t, th), path='data')
+            alert_table = Table.read('{}n200_s60_t{}_th{}_alert.hdf5'.format(path, t, th), path='data')
             alert_table['cu_flare'] = trans_table['cu_flare']
-            alert_table.write('build/threshold_studies/grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(t, th), path='data', overwrite=True)
+            alert_table.write('{}n200_s60_t{}_th{}_alert.hdf5'.format(path, t, th), path='data', overwrite=True)
 
 
-def group_alert_tables_by_cu_flare():
+def group_alert_tables_by_cu_flare(path='build/threshold_studies/'):
     for i in range(7):
         cu_min = i
         cu_max = i+1
         for th in range(1, 26):
             cu_1_table = Table()
             for t in range(2, 5):
-                alert_table = Table.read('build/threshold_studies/grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(t, th), path='data')
+                alert_table = Table.read('{}grid_search/n200_s60_t{}_th{}_alert.hdf5'.format(path, t, th), path='data')
                 cu_1_table = vstack([cu_1_table, alert_table[((alert_table['cu_flare'] >= cu_min) & (alert_table['cu_flare'] < cu_max))]])
-            cu_1_table.write('build/threshold_studies/brightness/n{}_s60_tAll_cu{}_th{}.hdf5'.format(len(cu_1_table), cu_max, th), path='data', overwrite=True)
+            cu_1_table.write('{}th_brightness/n{}_s60_tAll_cu{}_th{}.hdf5'.format(path, len(cu_1_table), cu_max, th), path='data', overwrite=True)
 
 
-def group_trans_tables_by_cu_flare():
+def group_trans_tables_by_cu_flare(path='build/threshold_studies/brightness/'):
     for i in range(7):
         cu_min = i
         cu_max = i+1
@@ -84,100 +84,7 @@ def group_trans_tables_by_cu_flare():
             cu_1_table = vstack([cu_1_table, trans_table[((trans_table['cu_flare'] >= cu_min) & (trans_table['cu_flare'] < cu_max))]])
         cu_1_table.meta['n_cubes'] = len(cu_1_table)
         cu_1_table.meta['cu_range'] = cu_max
-        cu_1_table.write('build/threshold_studies/brightness/n{}_s60_tAll_cu{}_trans.hdf5'.format(len(cu_1_table), cu_max), path='data', overwrite=True)
-
-
-def plot_roc_templates(df_tp, df_fp):
-    templates = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
-    fig, ax = plt.subplots()
-    for t in range(2, 5):
-        ax.plot(df_fp['FP-Rate'], df_tp[df_tp['Template'] == t]['TP-Rate'], label=templates[t-2])
-    ax.set_ylabel('TP-Rate')
-    ax.set_xlabel('FP-Rate')
-    ax.set_title('ROC')
-    ax.set_xlim(0,1)
-    ax.set_ylim(0,1)
-    ax.legend()
-
-    plt.savefig('build/plots/roc_templates.pdf')
-    plt.close()
-
-
-def plot_metrics_background(df):
-    fig, ax = plt.subplots()
-    ax.plot(df['Threshold'].values, df['FP-Rate'], label='FP-Rate', color='r')
-    ax.plot(df['Threshold'].values, df['TN-Rate'], label='TN-Rate', color='g')
-    ax.set_ylabel('Rate')
-    ax.set_xlabel('Threshold in a.u.')
-    ax.set_title('Background')
-    ax.legend()
-    ax.axvline(4, color='k', linestyle='--')
-
-    plt.savefig('build/plots/metrics_bg.pdf')
-    plt.close()
-
-
-def plot_metrics(df, df_background):
-    templates = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
-    for t in range(2, 5):
-        fig, ax = plt.subplots()
-
-        ax.plot(df_background['Threshold'].values, df_background['FP-Rate'], label='FP-Rate', color='r')
-        #ax.plot(df[df['Template'] == t]['Threshold'].values, df[df['Template'] == t]['FP-Rate'], label='FP-Rate', color='r', linestyle='--')
-        ax.plot(df[df['Template'] == t]['Threshold'].values, df[df['Template'] == t]['TP-Rate'], label='TP-Rate', color='g')
-        ax.plot(df[df['Template'] == t]['Threshold'].values, df[df['Template'] == t]['FN-Rate'], label='FN-Rate', color='b')
-        ax.set_ylabel('Rate')
-        ax.set_xlabel('Threshold in a.u.')
-        ax.set_title(templates[t-2])
-        ax.legend()
-        ax.axvline(6, color='k', linestyle='--')
-
-        plt.savefig('build/plots/metrics_t{}.pdf'.format(templates[t-2]))
-        plt.close()
-
-
-def plot_accuracy(df_signal, df_background):
-    templates = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
-    for t in range(2, 5):
-        fig, ax = plt.subplots()
-        tp = df_signal[df_signal['Template'] == t]['TP'].values
-        tn = df_background['TN'].values
-        p = df_signal[df_signal['Template'] == t]['num_cubes'].values
-        n = tn = df_background['num_cubes'].values
-        #embed()
-        ax.plot(df_signal[df_signal['Template'] == t]['Threshold'], (tp + tn) / (p + n))
-        ax.set_ylabel('Rate')
-        ax.set_xlabel('Threshold in a.u.')
-        ax.set_title('Accuracy {}'.format(templates[t-2]))
-        ax.legend()
-        ax.axvline(6, color='k', linestyle='--')
-
-        plt.savefig('build/plots/accuracy_t{}.pdf'.format(templates[t-2]))
-        plt.close()
-
-
-def plot_precision_recall(df_signal, df_background):
-    templates = ['Broad Gaussian', 'Narrow Gaussian', 'Deltapeak + Exponential Decay']
-    for t in range(2, 5):
-        fig, ax = plt.subplots()
-        tp = df_signal[df_signal['Template'] == t]['TP'].values
-        fn = df_signal[df_signal['Template'] == t]['FN'].values
-        tn = df_background['TN'].values
-        fp = df_background['FP'].values
-        p = df_signal[df_signal['Template'] == t]['num_cubes'].values
-        n = df_background['num_cubes'].values
-
-        ax.plot(df_signal[df_signal['Template'] == t]['Threshold'], tp / (tp + fp), label='Precision')
-        ax.plot(df_signal[df_signal['Template'] == t]['Threshold'], tp / (tp + fn), label='Recall')
-
-        ax.set_ylabel('Rate')
-        ax.set_xlabel('Threshold in a.u.')
-        ax.set_title('Precision/Recall {}'.format(templates[t-2]))
-        ax.legend()
-        ax.axvline(6, color='k', linestyle='--')
-
-        plt.savefig('build/plots/prec_rec_t{}.pdf'.format(templates[t-2]))
-        plt.close()
+        cu_1_table.write('{}th_brightness/n{}_s60_tAll_cu{}_trans.hdf5'.format(path, len(cu_1_table), cu_max), path='data', overwrite=True)
 
 
 def plot_tp(df, threshold=None):
@@ -202,9 +109,9 @@ def plot_tp(df, threshold=None):
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
-        plt.savefig('build/plots/true_positive_rate_th_k0.pdf')
+        plt.savefig('build/plots/true_positive_rate_th_oneW.pdf')
     else:
-        plt.savefig('build/plots/true_positive_rate_k0.pdf')
+        plt.savefig('build/plots/true_positive_rate_oneW.pdf')
 
 
 def plot_fp(df_bg, hours, threshold=None):
@@ -219,9 +126,9 @@ def plot_fp(df_bg, hours, threshold=None):
     if threshold is not None:
         ax.axvline(threshold, color='k', linestyle='--')
 
-        plt.savefig('build/plots/fp_per_hour_th_k0.pdf')
+        plt.savefig('build/plots/fp_per_hour_th_oneW.pdf')
     else:
-        plt.savefig('build/plots/fp_per_hour_k0.pdf')
+        plt.savefig('build/plots/fp_per_hour_oneW.pdf')
 
 
 def plot_tp_brightness(df):
@@ -237,17 +144,17 @@ def plot_tp_brightness(df):
         verticalalignment='bottom', horizontalalignment='right',
         transform=ax.transAxes,
         color='grey', fontsize=20)
-    plt.savefig('build/plots/tp_brightness_k0.pdf')
+    plt.savefig('build/plots/tp_brightness_oneW.pdf')
     plt.close()
 
 
 def main():
-    # add_cu_flare()
-    # group_alert_tables_by_cu_flare()
-    # group_trans_tables_by_cu_flare()
-    df_background = get_metrics_dataframe_background()
-    df_signal = get_metrics_dataframe()
-    df_brightness = get_metrics_dataframe_brightness()
+    # add_cu_flare(path='build/wavelet_studies/grid_search/')
+    # group_alert_tables_by_cu_flare(path='build/wavelet_studies/')
+    # group_trans_tables_by_cu_flare(path='build/wavelet_studies/')
+    df_background = get_metrics_dataframe_background(path='build/wavelet_studies/grid_search/')
+    df_signal = get_metrics_dataframe(path='build/wavelet_studies/grid_search/')
+    df_brightness = get_metrics_dataframe_brightness(path='build/wavelet_studies/th_brightness/')
 
 
     # plot_metrics(df_signal, df_background)
@@ -255,9 +162,9 @@ def main():
     # plot_precision_recall(df_signal, df_background)
     plot_tp_brightness(df_brightness)
     # plot_tp(df_signal, threshold=6)
-    # plot_tp(df_signal)
+    plot_tp(df_signal)
     # plot_fp(df_background, 83.33333, threshold=6)
-    # plot_fp(df_background, 83.33333)
+    plot_fp(df_background, 83.33333)
 
 
 
