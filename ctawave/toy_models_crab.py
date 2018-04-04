@@ -69,7 +69,13 @@ def simulate_steady_source_with_transient(
                                                 crab_coord.dec.deg,
                                                 ang_res_steady_source,
                                             )
-        RA_bg, DEC_bg = performance.sample_positions_background_random(fov, crab_coord, int(N_background_cta))
+        RA_bg, DEC_bg = performance.sample_positions_background_random(
+                                                fits_bg_rate,
+                                                time_per_slice,
+                                                N_background_cta,
+                                                fov,
+                                                crab_coord,
+                                            )
 
         if transient_scale[i] > 0:
             folded_events_transient = performance.response(
@@ -154,10 +160,12 @@ def simulate_steady_source(
                                             ang_res_steady_source,
                                         )
         RA_bg, DEC_bg = performance.sample_positions_background_random(
-                                            fov,
-                                            crab_coord,
-                                            int(N_background_cta),
-                                        )
+                                                fits_bg_rate,
+                                                time_per_slice,
+                                                N_background_cta,
+                                                fov,
+                                                crab_coord
+                                            )
         RA = np.concatenate([RA_bg, RA_crab])
         DEC = np.concatenate([DEC_bg, DEC_crab])
 
