@@ -10,6 +10,8 @@ def simulate_steady_source_with_transient(
             fits_bg_rate,
             psf,
             cu_flare,
+            pos_ra,
+            pos_dec,
             transient_template,
             num_slices=100,
             time_per_slice=30 * u.s,
@@ -43,8 +45,8 @@ def simulate_steady_source_with_transient(
     #     if theta > 1 and theta < 6:
     #         valid_transient_position = True
 
-    ra_transient = crab_coord.ra.deg - fov.value / 4
-    dec_transient = crab_coord.dec.deg - fov.value / 4
+    ra_transient = crab_coord.ra.deg - fov.value / pos_ra
+    dec_transient = crab_coord.dec.deg - fov.value / pos_dec
     theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
 
     slices = []
@@ -67,7 +69,13 @@ def simulate_steady_source_with_transient(
                                                 crab_coord.dec.deg,
                                                 ang_res_steady_source,
                                             )
-        RA_bg, DEC_bg = performance.sample_positions_background_random(fov, crab_coord, int(N_background_cta))
+        RA_bg, DEC_bg = performance.sample_positions_background_random(
+                                                fits_bg_rate,
+                                                time_per_slice,
+                                                N_background_cta,
+                                                fov,
+                                                crab_coord,
+                                            )
 
         if transient_scale[i] > 0:
             folded_events_transient = performance.response(
@@ -152,10 +160,12 @@ def simulate_steady_source(
                                             ang_res_steady_source,
                                         )
         RA_bg, DEC_bg = performance.sample_positions_background_random(
-                                            fov,
-                                            crab_coord,
-                                            int(N_background_cta),
-                                        )
+                                                fits_bg_rate,
+                                                time_per_slice,
+                                                N_background_cta,
+                                                fov,
+                                                crab_coord
+                                            )
         RA = np.concatenate([RA_bg, RA_crab])
         DEC = np.concatenate([DEC_bg, DEC_crab])
 
@@ -173,15 +183,3 @@ def simulate_steady_source(
         n_events += 1/float(num_slices)*len(folded_events_crab)
 
     return np.array(slices)
-
-
-def remove_steady_background(
-            cube_with_transient,
-            n_bg_slices,
-            gap
-        ):
-    slices = []
-    for i in range(n_bg_slices+gap, len(cube_with_transient)):
-        slices.append(cube_with_transient[i] - cube_with_transient[(i - gap - n_bg_slices):(i-gap)].mean(axis=0))
-
-    return slices

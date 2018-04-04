@@ -1,7 +1,8 @@
 import numpy as np
 import spectrum
 import astropy.units as u
-from scipy import integrate
+from astropy.coordinates import SkyCoord
+from scipy import integrate, interpolate
 from IPython import embed
 
 
@@ -71,20 +72,43 @@ def sample_positions_steady_source(ra_pos, dec_pos, ang_res):
     return RA, DEC
 
 
-def sample_positions_background_random(fov, source_coordinates, N):
+def sample_positions_background_random(irf_bg, time_per_slice, N, fov, crab_coord):
     '''
-    Sample positions for given number of background events from normal distribution
+    Sample positions for given number of background events from background distribution
     '''
-    RA_bg = np.random.uniform(
-                        source_coordinates.ra.value - fov.value / 2,
-                        source_coordinates.ra.value + fov.value / 2,
-                        N,
-                    )
-    DEC_bg = np.random.uniform(
-                        source_coordinates.dec.value - fov.value / 2,
-                        source_coordinates.dec.value + fov.value / 2,
-                        N,
-                    )
+    ra_min = crab_coord.ra.deg - fov.value/2
+    ra_max = crab_coord.ra.deg + fov.value/2
+    dec_min = crab_coord.dec.deg - fov.value/2
+    dec_max = crab_coord.dec.deg + fov.value/2
+
+    bg = irf_bg.data['BGD'][0]
+    bg_dist_for_slice = bg.sum(axis=0) * time_per_slice.value
+
+    bins_ra = bg_dist_for_slice.shape[0]
+    bins_dec = bg_dist_for_slice.shape[1]
+
+    cumsum_cols = np.cumsum(bg_dist_for_slice, axis=0)
+    cumsum_last_row = np.cumsum(cumsum_cols[-1])
+    y = np.linspace(dec_min, dec_max, bins_dec + 1)
+
+    inverse_response_curves_y = []
+    for col in cumsum_cols.T:
+        col = np.hstack([0, col])
+        inverse_response_curves_y.append(interpolate.interp1d(col, y))
+
+    y = np.linspace(ra_min, ra_max, bins_ra + 1)
+    inverse_response_x = interpolate.interp1d(np.hstack([0, cumsum_last_row]), y)
+
+    RA_bg = []
+    DEC_bg = []
+    for i in range(int(N.value)):
+        urx = np.random.uniform(0, cumsum_last_row.max())
+        ra = inverse_response_x(urx)
+        ix = int((ra - ra_min)/(ra_max - ra_min) * bins_ra)
+        ury = np.random.uniform(0, cumsum_cols.T[ix].max())
+        dec = inverse_response_curves_y[ix](ury)
+        RA_bg.append(ra)
+        DEC_bg.append(dec)
 
     return RA_bg, DEC_bg
 
