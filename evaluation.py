@@ -2,7 +2,7 @@ import click
 import numpy as np
 from astropy.table import Table
 
-from IPython import embed
+# from IPython import embed
 
 
 def get_next_trigger(trigger_index, start_flare):
@@ -64,7 +64,6 @@ def metrics_background(table_alert_bg):
         sum_fp += count_fp(ts)
 
     return sum_fp
-
 
 
 @click.command()

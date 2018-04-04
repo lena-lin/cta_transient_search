@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 import click
 import astropy.units as u
@@ -9,7 +8,7 @@ from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
 
-from IPython import embed
+# from IPython import embed
 
 from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential
 
@@ -147,7 +146,14 @@ def main(
     small = narrow_gaussian(num_slices, noise)
     exponential = deltapeak_exponential(num_slices, noise)
 
-    transient_templates = [pks_data[1] - pks_data[1].min(), hess_data[1]-hess_data[1].min(), simple, small, exponential]  # indices 0 to 5
+    transient_templates = [
+                            pks_data[1] - pks_data[1].min(),
+                            hess_data[1]-hess_data[1].min(),
+                            simple,
+                            small,
+                            exponential
+                        ]  # indices 0 to 5
+
 # Choose start of transient dependent on template
     transient_start_slices = np.array(
                                         [
@@ -261,8 +267,8 @@ def main(
     trans_table['cu_flare'] = list_cu_flare
     trans_table['template'] = list_templates
     trans_table['position'] = list_transient_positions
-    ### start slice for templates, dependent on template index + num_slices
-    ### end slice arbitrary!! Not used so far
+    # start slice for templates, dependent on template index + num_slices
+    # end slice arbitrary!! Not used so far
     trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices
     trans_table['end_flare'] = 12 + num_slices
 

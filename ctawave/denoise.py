@@ -42,8 +42,12 @@ def thresholding_3d(
     return r
 
 
-def thresholding(coefficient_list, sigma_d=2, k=3, kind='hard',
-    sigma_levels=[0.889, 0.2, 0.086, 0.041, 0.020, 0.010, 0.005, 0.0025, 0.0012]):
+def thresholding(
+            coefficient_list,
+            sigma_d=2,
+            k=3,
+            kind='hard',
+            sigma_levels=[0.889, 0.2, 0.086, 0.041, 0.020, 0.010, 0.005, 0.0025, 0.0012]):
     '''
     at this points we have al coefficients for all planes. We can de-noise by adapting
     small coefficients. Some call this step 'thresholding'.

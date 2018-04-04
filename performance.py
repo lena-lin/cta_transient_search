@@ -1,9 +1,8 @@
 import numpy as np
 import spectrum
 import astropy.units as u
-from astropy.coordinates import SkyCoord
 from scipy import integrate, interpolate
-from IPython import embed
+# from IPython import embed
 
 
 def interp_ang_res(event_E_TeV, bin_bound_E_TeV, psf_sigma):
@@ -12,7 +11,7 @@ def interp_ang_res(event_E_TeV, bin_bound_E_TeV, psf_sigma):
     '''
     return np.interp(event_E_TeV, bin_bound_E_TeV, psf_sigma)
 
-#TODO check calc_a_eff_factor
+
 def calc_a_eff_factor(df_A_eff, simulation_area):
     '''
     Returns integrated effective area divided by full impact area
@@ -33,7 +32,8 @@ def interp_eff_area(event_E_TeV, bin_bound_E_TeV, a_eff):
 
 def response(T, N, e_min, e_max, A_eff, simulation_area, theta):
     '''
-    Returns array of events (list of energies) from a source with power law distribution folded with effective area of the telescope
+    Returns array of events (list of energies) from a source with power law distribution
+    folded with effective area of the telescope
 
     Parameters:
     index: index of the power law spectrum
@@ -59,7 +59,8 @@ def response(T, N, e_min, e_max, A_eff, simulation_area, theta):
 
 def sample_positions_steady_source(ra_pos, dec_pos, ang_res):
     '''
-    Sample position for every particle with given mean position and angular resolution as mean and covariance for normal distribution
+    Sample position for every particle with given mean position and angular resolution as
+    mean and covariance for normal distribution
     '''
     mean = [ra_pos, dec_pos]
     RA = []
