@@ -1,6 +1,23 @@
 import pywt
 from scipy.signal import wiener
 
+
+def remove_steady_background(
+            cube_raw,
+            n_bg_slices,
+            gap
+        ):
+
+    if((cube_raw.shape[0] - n_bg_slices - gap) % 4 != 0):
+        gap = gap + (cube_raw.shape[0] - n_bg_slices - gap) % 4
+
+    slices = []
+    for i in range(n_bg_slices+gap, len(cube_raw)):
+        slices.append(cube_raw[i] - cube_raw[(i - gap - n_bg_slices):(i-gap)].mean(axis=0))
+
+    return slices
+
+
 def thresholding_3d(
             coefficient_list,
             sigma_d=2,
@@ -26,7 +43,7 @@ def thresholding_3d(
 
 
 def thresholding(coefficient_list, sigma_d=2, k=3, kind='hard',
-            sigma_levels=[0.889, 0.2, 0.086, 0.041, 0.020, 0.010, 0.005, 0.0025, 0.0012]):
+    sigma_levels=[0.889, 0.2, 0.086, 0.041, 0.020, 0.010, 0.005, 0.0025, 0.0012]):
     '''
     at this points we have al coefficients for all planes. We can de-noise by adapting
     small coefficients. Some call this step 'thresholding'.
