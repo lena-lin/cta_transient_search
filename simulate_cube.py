@@ -89,6 +89,20 @@ astropy tables:
     default=7
 )
 @click.option(
+    '--trans_pos_ra',
+    '-x',
+    type=click.INT,
+    help='Ra Transient (Ration FoV!!): crab_coord.ra.deg - fov.value / X',
+    default=8
+)
+@click.option(
+    '--trans_pos_dec',
+    '-y',
+    type=click.INT,
+    help='Dec Transient (Ration FoV!!): crab_coord.dec.deg - fov.value / Y',
+    default=8
+)
+@click.option(
     '--num_slices',
     '-s',
     type=click.INT,
@@ -114,6 +128,8 @@ def main(
     bins_,
     cu_min,
     cu_max,
+    trans_pos_ra,
+    trans_pos_dec
 ):
     '''
     Load CTA IRFs and transient template
@@ -205,6 +221,8 @@ def main(
                     fits_bg_rate=data_bg_rate,
                     psf=psf_cta_south,
                     cu_flare=cu_flare,
+                    pos_ra=trans_pos_ra,
+                    pos_dec=trans_pos_dec,
                     transient_template=transient_templates[list_templates[i]],
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
