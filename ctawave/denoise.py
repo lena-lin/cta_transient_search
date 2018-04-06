@@ -1,3 +1,4 @@
+import numpy as np
 import pywt
 from scipy.signal import wiener
 
@@ -7,15 +8,38 @@ def remove_steady_background(
             n_bg_slices,
             gap
         ):
+    '''
+    Remove background by mean over sliding window
+    gap: number of 'gap-slices' between sli window and curret slice
+    '''
 
     if((cube_raw.shape[0] - n_bg_slices - gap) % 4 != 0):
         gap = gap + (cube_raw.shape[0] - n_bg_slices - gap) % 4
 
+    start_slices = cube_raw[:n_bg_slices+gap] - cube_raw[:n_bg_slices+gap].mean(axis=0)
     slices = []
     for i in range(n_bg_slices+gap, len(cube_raw)):
         slices.append(cube_raw[i] - cube_raw[(i - gap - n_bg_slices):(i-gap)].mean(axis=0))
 
-    return slices
+    cube_smoothed = np.vstack([start_slices, np.asarray(slices)])
+
+    return cube_smoothed
+
+
+def remove_steady_background_stationary(
+            cube_raw,
+            n_bg_slices,
+            gap
+        ):
+    '''
+    Remove background by mean over fixed window (without transient)
+    to be sure that transient is not substracted from current slice
+    '''
+    mean_slice = cube_raw[:n_bg_slices+gap].mean(axis=0)
+
+    cube_smoothed = cube_raw - mean_slice
+
+    return cube_smoothed
 
 
 def thresholding_3d(
