@@ -14,16 +14,12 @@ def wavelet_denoising_cube(
     n_bg_slices,
     gap,
     bins,
-    n_wavelet_slices=8,
+    n_wavelet_slices,
 ):
         cube_without_steady_source = remove_steady_background(cube_raw, n_bg_slices, gap)
 
         cube_denoised = []
         for i in range(n_wavelet_slices, len(cube_without_steady_source)):
-            if i < n_wavelet_slices:
-                wavelet_cube = cube_without_steady_source[0:i+1]
-            else:
-                wavelet_cube = cube_without_steady_source[i-n_wavelet_slices+1:i+1]
 
             coeffs = pywt.swtn(data=cube_without_steady_source[i-n_wavelet_slices:i], wavelet='bior1.3', level=2, start_level=0)
             ct = thresholding_3d(coeffs, k=30)
@@ -42,6 +38,12 @@ def wavelet_denoising_cube(
     default='build'
 )
 @click.option(
+    '--n_wavelet_slices',
+    '-w',
+    help='Number of slices for wavelet denoising window',
+    default=8
+)
+@click.option(
     '--n_bg_slices',
     '-s',
     help='Number of slices for background mean',
@@ -56,6 +58,7 @@ def wavelet_denoising_cube(
 def main(
     input_file,
     output_path,
+    n_wavelet_slices,
     n_bg_slices,
     gap,
 ):
@@ -77,7 +80,7 @@ def main(
 
     list_cubes_denoised = []
     for cube in tqdm(cube_raw_table['cube']):
-        cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins)
+        cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins, n_wavelet_slices)
         list_cubes_denoised.append(cube_denoised)
 
     denoised_table = Table()
