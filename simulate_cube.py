@@ -159,8 +159,8 @@ def main(
                                         [
                                             num_slices//2 - 5,
                                             num_slices//2 - 3,
-                                            num_slices//2 - 5,
                                             num_slices//2 - 1,
+                                            num_slices//2,
                                             num_slices//2 - round(1/3 * num_slices)
                                         ]
                                     )
@@ -290,8 +290,8 @@ def main(
     trans_table.meta['time_per_slice'] = time_per_slice
     trans_table.meta['bins'] = bins_
 
-    cube_table.write('{}/n{}_s{}_t{}_cube.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
-    trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
+    cube_table.write('{}/n{}_s{}_t{}_tps{}_cube.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_index, time_per_slice), path='data', overwrite=True)
+    trans_table.write('{}/n{}_s{}_t{}_ps{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_index, time_per_slice), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
