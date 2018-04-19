@@ -23,8 +23,8 @@ def simulate_steady_source_with_transient(
 
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2
-    crab_coord = SkyCoord.from_name('Crab')
-
+    #crab_coord = SkyCoord.from_name('Crab')
+    crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
 
@@ -132,7 +132,8 @@ def simulate_steady_source(
         ):
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2
-    crab_coord = SkyCoord.from_name('Crab')
+    #crab_coord = SkyCoord.from_name('Crab')  ## Astropy exception handling in 'from_name', BUGG :(
+    crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
 
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)

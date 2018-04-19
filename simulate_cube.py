@@ -38,8 +38,10 @@ astropy tables:
 )
 @click.option(
     '--irf_path',
+    '-f',
     type=click.Path(dir_okay=True),
     help='Directory for CTA Instrument Response Function (prod3b)',
+    #default='/home/lena/Dokumente/CTA'
     default='/home/lena/Dokumente/CTA'
 )
 @click.option(
