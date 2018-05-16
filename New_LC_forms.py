@@ -42,7 +42,8 @@ def Step_exp(t,tp,Fp,b ,alpha):
 def simulate_Gaussians(sigma_range_min,sigma_range_max,Num_slices,time_per_slice):
     '''
     Prefered start values:
-    1.8 < sigma < 16
+    1.8 < sigma < 16 for brighter simulate_Gaussians
+    0.45 < sigma < 2.2 for small Gaussians
     Num_slices = 40
     time_per_slice = 10
     '''
@@ -61,8 +62,8 @@ def simulate_Gaussians(sigma_range_min,sigma_range_max,Num_slices,time_per_slice
     Start with 3 slices + 1 sigma before peak
     End with 3 sliced and 1 sigma after peak
     '''
-    mu_min = sigma_range_max_time+time_per_slice*3
-    mu_max = Num_slices*time_per_slice -3*time_per_slice -sigma_range_max_time
+    mu_min = sigma_range_max_time+time_per_slice*2
+    mu_max = Num_slices*time_per_slice -2*time_per_slice -sigma_range_max_time
 
     mu = uniform(mu_min,mu_max)
 
@@ -101,10 +102,6 @@ def simulate_Exponential(alpha_min,alpha_max,b_min,b_max,Num_slices,time_per_sli
     x2 =np.linspace(0,time,Num_slices)
     y2 = Step_exp(x2,params[0], params[1], params[2], params[3])
     y2 = y2/y2.max()
+    True_Start = int(tp/time_per_slice)
 
-    return y2,tp
-
-'''
-Call:
-y,tp = simulate_function()
-'''
+    return y2,True_Start

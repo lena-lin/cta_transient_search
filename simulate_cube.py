@@ -10,7 +10,8 @@ from tqdm import tqdm
 
 # from IPython import embed
 
-from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential
+from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential  # Old version
+from New_LC_forms import simulate_Gaussians,simulate_Exponential # New test
 
 
 '''
@@ -55,7 +56,7 @@ astropy tables:
     '--transient_template_index',
     '-i',
     type=click.INT,
-    help='Transient template index: 0=pks, 1=hess, 2=broad gauss, 3=narrow gauss, 4=deltapeak + exponential fall',
+    help='Transient template index:  0=broad gauss, 1=narrow gauss, 2=deltapeak + exponential fall',
     default='2'
 )
 @click.option(
@@ -75,13 +76,13 @@ astropy tables:
     '-t',
     type=click.INT,
     help='Observation time per slice in seconds',
-    default='30'
+    default='10'
 )
 @click.option(
     '--cu_min',
     type=click.FLOAT,
     help='Minimum transient brightness in crab units',
-    default=0.1
+    default=1
 )
 @click.option(
     '--cu_max',
@@ -108,7 +109,7 @@ astropy tables:
     '-s',
     type=click.INT,
     help='Number of slices per simulation. Size cube = 3*num_slices!!!!',
-    default='20'
+    default='40'
 )
 @click.option(
     '--bins_',
@@ -139,47 +140,31 @@ def main(
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
-# First Choise of used templates to interpolate
+# First Choice of used templates to interpolate : Problem of defining the truth
     pks_data = np.loadtxt('data/PKS2155-flare06.dat', unpack=True)
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
-    simple = broad_gaussian(num_slices, noise)  # 4% noise
-    small = narrow_gaussian(num_slices, noise)
-    exponential = deltapeak_exponential(num_slices, noise)
+    simple,true_start_simple = simulate_Gaussians(1.8348,16.0364,num_slices,time_per_slice)
+    small,true_start_small = simulate_Gaussians(0.45,2.18,num_slices,time_per_slice)
+    exponential,true_start_exponential  = simulate_Exponential(3,6,0,2,num_slices,time_per_slice)
 
-    transient_templates = [
-                            pks_data[1] - pks_data[1].min(),
-                            hess_data[1]-hess_data[1].min(),
-                            simple,
-                            small,
-                            exponential
-                        ]  # indices 0 to 5
+    transient_templates = [simple,small,exponential]
 
 # Choose start of transient dependent on template
-    transient_start_slices = np.array(
-                                        [
-                                            num_slices//2 - 5,
-                                            num_slices//2 - 3,
-                                            num_slices//2 - 5,
-                                            num_slices//2 - 1,
-                                            num_slices//2 - round(1/3 * num_slices)
-                                        ]
-                                    )
+    transient_start_slices = np.array([
+                                        true_start_simple,true_start_small,true_start_exponential
+                                        ]) #wihtin the 2nd cube, value between 0 and num_slices
 
-    a_eff_cta_south = OrderedDict(
-                            {
+    a_eff_cta_south = OrderedDict({
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
                                 "A_eff": data_A_eff.data['EFFAREA'][0]
-                            }
-                        )
+                            })
 
-    psf_cta_south = OrderedDict(
-                                {
+    psf_cta_south = OrderedDict({
                                     "E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2,
                                     "psf_sigma": data_ang_res.data['SIGMA_1'][0]
-                                }
-                            )
+                                })
 
     '''
     Start simulation
@@ -222,7 +207,7 @@ def main(
         '''
         cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
 
-        list_cu_flare.append(cu_flare)  # nicht vrest  mitnehmen?
+        list_cu_flare.append(cu_flare)
 
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     A_eff=a_eff_cta_south,
@@ -270,8 +255,8 @@ def main(
     trans_table['template'] = list_templates
     trans_table['position'] = list_transient_positions
     # start slice for templates, dependent on template index + num_slices
-    # end slice arbitrary!! Not used so far
-    trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices
+    trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices # add first empty cube, but not added in evaluation.py
+    #end slice arbitrary!! Not used so far
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
