@@ -1,8 +1,8 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena 
 irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana 
-n_transient=10
-num_slices_per_part=20
-num_slices=60
+n_transient=200
+num_slices_per_part=40
+num_slices=120
 transient_template_filename=random
 random_flag=-r
 

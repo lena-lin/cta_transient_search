@@ -90,6 +90,7 @@ def main(
 
     denoised_table.meta = cube_raw_table.meta
     denoised_table.meta['n_bg_slices'] = n_bg_slices
+    denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
     denoised_table.meta['gap'] = gap
 
     denoised_table.write('{}/n{}_s{}_t{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
