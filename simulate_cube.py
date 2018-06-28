@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 # from IPython import embed
 
-from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential  # Old version
+#from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential  # Old version
 from New_LC_forms import simulate_Gaussians,simulate_Exponential # New test
 
 
