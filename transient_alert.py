@@ -61,11 +61,8 @@ def get_transient_position(
     source_coordinates = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
     list_positions = []
     for trig, cube in zip(first_trigger, list_cubes):
-        print(trig)
-
-        print(trig)
-        trigger = np.where(np.diff(trig==1))[0][0]
-        if trigger >= 0:
+        if len(trig[trig!=False]) > 0:
+            trigger = np.where(np.diff(trig==1))[0][0]+1  # simple test with np.where
             slice = cube[trigger]
             max_pos = np.unravel_index(np.argmax(slice), slice.shape)
             max_pos_ra = max_pos[0] * fov/bins + source_coordinates.ra.deg - fov/2
@@ -132,7 +129,6 @@ def main(
                                          denoised_table.meta['steady_source']
                                      )
 
-    print('Loooping')
     alert_table.meta = denoised_table.meta
     alert_table.meta['threshold'] = threshold
     #alert_table.write('{}/n{}_s{}_t{}_th{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, threshold), path='data', overwrite=True)
