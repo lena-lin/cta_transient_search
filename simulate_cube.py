@@ -82,7 +82,7 @@ astropy tables:
     '--cu_min',
     type=click.FLOAT,
     help='Minimum transient brightness in crab units',
-    default=1
+    default=2
 )
 @click.option(
     '--cu_max',
