@@ -4,7 +4,6 @@ from astropy.table import Table
 
 # from IPython import embed
 
-
 def get_next_trigger(trigger_index, start_flare):
     list_trigger = []
     for i in range(len(trigger_index)):
@@ -19,6 +18,7 @@ def get_next_trigger(trigger_index, start_flare):
 
 def count_tp_fp_fn(ts, start_flare):
     rt, = np.where(np.diff(ts.astype(int)) == 1)
+    rt += 1    # np.where docu
     print('detected at:',rt,'simulated at:',start_flare,'with', np.abs(rt - start_flare))
     tp = np.any(np.abs(rt - start_flare) <= 3)
     fp = len(rt) - tp
@@ -80,7 +80,7 @@ def evaluate(table_simulation, table_alert):
             diff_dec = abs(prediction[1] - truth[1])
             distance = np.sqrt(diff_dec**2+diff_ra**2)
             distances.append(distance)
-            print(distance)
+            #print(distance)
             if distance <= 1:
                 sum_true += 1
             else:
@@ -110,10 +110,13 @@ def main(
         Sum_true, Sum_false, distances = evaluate(table_simulation, table_alert)
 
         print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        print('Predicted RA in FOV around Crab: ',table_alert['pred_position'][0][0] )
+        print('Predicted DEC in FOV around Crab: ',table_alert['pred_position'][0][1] )
+        print('Simulated transient at: ', table_simulation['position'][0][0], table_simulation['position'][0][1] )
         print('True Position: {} \n False Position: {} \n  '.format(Sum_true, Sum_false))
         f = open('{}/evaluation_{}.txt'.format(output_path, num_cubes), 'w')
         f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
-        f.writelines('Number of simulated transients: {} \n True Position: {} \n False Position: {} \n Distances between predited and true position: {}'.format(num_cubes, Sum_true, Sum_false, distances))
+        f.writelines('\n Position evaluation: \n Number true positions: {} \n Number false positions: {} \n Distances between predited and true position: \n {}'.format(Sum_true, Sum_false, distances))
         f.close()
 
 
