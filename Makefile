@@ -1,6 +1,6 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena
-irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
-#irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana auf Vollmond
+#irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
+irf_path= '..' ## Jana auf Vollmond
 n_transient=1
 num_slices_per_part=20
 num_slices=60
