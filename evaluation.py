@@ -17,15 +17,23 @@ def get_next_trigger(trigger_index, start_flare):
 
 
 def count_tp_fp_fn(ts, start_flare):
-    rt, = np.where(np.diff(ts.astype(int)) == 1)
-    rt += 1    # np.where docu
-    print('detected at:',rt,'simulated at:',start_flare,'with', np.abs(rt - start_flare))
-    tp = np.any(np.abs(rt - start_flare) <= 3)
-    fp = len(rt) - tp
-    if tp == 0:
-        fn = 1
-    else:
+    trigger, = np.where(np.diff(ts.astype(int)) == 1)
+    if len(trigger) !=0:
+        rt = trigger[0]+1    # np.where docu
+    #rt = trigger+1  as an array
+        print('detected at:',rt,'simulated at:',start_flare,'with', np.abs(rt - start_flare))
+        tp = np.abs(rt - start_flare) <= 3
+        fp = np.abs(rt - start_flare) > 3
         fn = 0
+    #if tp == 0:
+    #    fn = 1
+    #else:
+    #    fn = 0
+    else:
+        print(' not detected ! simulated at:',start_flare)
+        fn = 1
+        tp = 0
+        fp = 0
 
     return tp, fp, fn
 
@@ -88,6 +96,21 @@ def evaluate(table_simulation, table_alert):
         return sum_true, sum_false , distances
 
 
+
+def evaluations(
+    input_simulation,  # Trans
+    input_alert, # Alert
+):
+        table_simulation = Table.read(input_simulation, path='data')
+        table_alert = Table.read(input_alert, path='data')
+        threshold = table_alert.meta['threshold']
+        num_cubes = table_simulation.meta['n_transient']
+        sum_trigger, tp, fp, fn = metrics(table_simulation, table_alert)
+
+        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        return tp,fp,fn
+
+
 @click.command()
 @click.argument('input_simulation', type=click.Path(file_okay=True, dir_okay=False))
 @click.argument('input_alert', type=click.Path(file_okay=True, dir_okay=False))
@@ -104,6 +127,7 @@ def main(
 ):
         table_simulation = Table.read(input_simulation, path='data')
         table_alert = Table.read(input_alert, path='data')
+        threshold = table_alert.meta['threshold']
         num_cubes = table_simulation.meta['n_transient']
         sum_trigger, tp, fp, fn = metrics(table_simulation, table_alert)
 
@@ -114,10 +138,13 @@ def main(
         print('Predicted DEC in FOV around Crab: ',table_alert['pred_position'][0][1] )
         print('Simulated transient at: ', table_simulation['position'][0][0], table_simulation['position'][0][1] )
         print('True Position: {} \n False Position: {} \n  '.format(Sum_true, Sum_false))
-        f = open('{}/evaluation_{}.txt'.format(output_path, num_cubes), 'w')
+        f = open('build/evaluation_{}_{}.txt'.format(num_cubes,threshold), 'w')
         f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
         f.writelines('\n Position evaluation: \n Number true positions: {} \n Number false positions: {} \n Distances between predited and true position for all transients in deg: \n {}'.format(Sum_true, Sum_false, distances))
         f.close()
+
+        return tp,fp,fn
+
 
 
 if __name__ == '__main__':
