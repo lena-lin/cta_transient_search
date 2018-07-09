@@ -116,7 +116,7 @@ def main(
         print('True Position: {} \n False Position: {} \n  '.format(Sum_true, Sum_false))
         f = open('{}/evaluation_{}.txt'.format(output_path, num_cubes), 'w')
         f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
-        f.writelines('\n Position evaluation: \n Number true positions: {} \n Number false positions: {} \n Distances between predited and true position: \n {}'.format(Sum_true, Sum_false, distances))
+        f.writelines('\n Position evaluation: \n Number true positions: {} \n Number false positions: {} \n Distances between predited and true position for all transients in deg: \n {}'.format(Sum_true, Sum_false, distances))
         f.close()
 
 
