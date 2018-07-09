@@ -1,16 +1,14 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena
 #irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
 irf_path= '..' ## Jana auf Vollmond
-n_transient = 10
+n_transient = 40
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random
 random_flag=-r
 
-
-
-all: build/evaluation_score.txt
-
+all: build/evaluation_400_1.txt
+	build/evaluation_400_2.txt
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 : simulate_cube.py | build
 	python simulate_cube.py -f $(irf_path) -n $(n_transient) -s $(num_slices_per_part) $(random_flag)
 
@@ -23,16 +21,16 @@ build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hd
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trigger.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 | build
 
-build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 : transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 | build
-	python transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5
+build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_thr1_alert.hdf5 : transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 | build
+	python transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 --output_path build -t 1
 
-build/evaluation_score.txt: build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5
+build/evaluation_400_1.txt: build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5
 
-build/evaluation_score.txt: build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5
+build/evaluation_400_1.txt: build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_thr1_alert.hdf5
 
-build/evaluation_score.txt: evaluation.py  | build
+build/evaluation_400_1.txt: evaluation.py  | build
 	python evaluation.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 \
-		build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 \
+		build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_thr1_alert.hdf5
 
 build:
 	mkdir -p build
