@@ -12,6 +12,7 @@ def simulate_steady_source_with_transient(
             cu_flare,
             pos_ra,
             pos_dec,
+            pos_random,
             transient_template,
             num_slices=100,
             time_per_slice=10 * u.s,
@@ -31,23 +32,25 @@ def simulate_steady_source_with_transient(
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
 
-    valid_transient_position = False
-    while not valid_transient_position:
-         ra_transient = np.random.randint(
-                                         crab_coord.ra.deg - fov.value / 2 + fov.value / 10,
-                                         crab_coord.ra.deg + fov.value / 2 - fov.value / 10
-                                         )
-         dec_transient = np.random.randint(
-                                         crab_coord.dec.deg - fov.value / 2 + fov.value / 10,
-                                         crab_coord.dec.deg + fov.value / 2 - fov.value / 10
-                                         )
-         theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
-         if theta > 1 and theta < 6:
-             valid_transient_position = True
+    if pos_random == True:
+        valid_transient_position = False
+        while not valid_transient_position:
+             ra_transient = np.random.randint(
+                                             crab_coord.ra.deg - fov.value / 2 + fov.value / 10,
+                                             crab_coord.ra.deg + fov.value / 2 - fov.value / 10
+                                             )
+             dec_transient = np.random.randint(
+                                             crab_coord.dec.deg - fov.value / 2 + fov.value / 10,
+                                             crab_coord.dec.deg + fov.value / 2 - fov.value / 10
+                                             )
+             theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
+             if theta > 1 and theta < 6:
+                 valid_transient_position = True
 
-    #ra_transient = crab_coord.ra.deg - fov.value / pos_ra
-    #dec_transient = crab_coord.dec.deg - fov.value / pos_dec
-    #theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
+    if pos_random == False:
+        ra_transient = crab_coord.ra.deg - fov.value / pos_ra
+        dec_transient = crab_coord.dec.deg - fov.value / pos_dec
+        theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
 
     slices = []
     for i in range(num_slices):

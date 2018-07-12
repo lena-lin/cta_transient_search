@@ -94,15 +94,22 @@ astropy tables:
     '--trans_pos_ra',
     '-x',
     type=click.INT,
-    help='Ra Transient (Ration FoV!!): crab_coord.ra.deg - fov.value / X',
+    help='Ra Transient (Ration FoV!!): crab_coord.ra.deg - fov.value / X: Enter value with abs() larger than 2.5',
     default=8
 )
 @click.option(
     '--trans_pos_dec',
     '-y',
     type=click.INT,
-    help='Dec Transient (Ration FoV!!): crab_coord.dec.deg - fov.value / Y',
+    help='Dec Transient (Ration FoV!!): crab_coord.dec.deg - fov.value / Y:  Enter value with abs() larger than 2.5',
     default=8
+)
+@click.option(
+    '--boolean_position',
+    '-p',
+    type=click.BOOL,
+    help='Boolean set True if position should get randomly drag',
+    default=True
 )
 @click.option(
     '--num_slices',
@@ -131,8 +138,10 @@ def main(
     cu_min,
     cu_max,
     trans_pos_ra,
-    trans_pos_dec
+    trans_pos_dec,
+    boolean_position
 ):
+
     '''
     Load CTA IRFs and transient template
     '''
@@ -216,6 +225,7 @@ def main(
                     cu_flare=cu_flare,
                     pos_ra=trans_pos_ra,
                     pos_dec=trans_pos_dec,
+                    pos_random = boolean_position,
                     transient_template=transient_templates[list_templates[i]],
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
