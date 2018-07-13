@@ -93,14 +93,14 @@ astropy tables:
 @click.option(
     '--trans_pos_ra',
     '-x',
-    type=click.INT,
+    type=click.FLOAT,
     help='Ra Transient (Ration FoV!!): crab_coord.ra.deg - fov.value / X: Enter value with abs() larger than 2.5',
     default=8
 )
 @click.option(
     '--trans_pos_dec',
     '-y',
-    type=click.INT,
+    type=click.FLOAT,
     help='Dec Transient (Ration FoV!!): crab_coord.dec.deg - fov.value / Y:  Enter value with abs() larger than 2.5',
     default=8
 )

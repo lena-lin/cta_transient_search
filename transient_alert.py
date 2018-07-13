@@ -93,6 +93,12 @@ def make_table(input_file,  # ! denoised table
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
     alert_table['trans_factor_diff'] = denoised_table['trans_factor_diff']  # time trigger criterion
+    alert_table['pred_position'] = get_transient_position(
+                                             table_den['cube_smoothed'],
+                                             trigger_index, denoised_table.meta['fov'],
+                                             denoised_table.meta['bins'],
+                                             denoised_table.meta['steady_source']
+                                         )
     alert_table.meta = denoised_table.meta
     alert_table.meta['threshold'] = threshold
     alert_table.write('build/n{}_s{}_t{}_thr{}_alert.hdf5'.format(n_transient, num_slices, transient_template_index,threshold), path='data', overwrite=True)
