@@ -7,8 +7,8 @@ num_slices=60
 transient_template_filename=random
 random_flag=-r
 threshold = 5
-Ra = 6
-Dec = 3
+Ra = 10
+Dec = 3.18
 
 all: build/evaluation_20_$(threshold)_Ra$(Ra)_Dec$(Dec).txt
 
