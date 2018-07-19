@@ -1,14 +1,14 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena
 #irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
 irf_path= '..' ## Jana auf Vollmond
-n_transient = 5
+n_transient = 1
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random
 random_flag=-r
 threshold = 5
-Ra = 10
-Dec = 3.18
+Ra = 36
+Dec =3.01
 
 all: build/evaluation_20_$(threshold)_Ra$(Ra)_Dec$(Dec).txt
 
