@@ -1,19 +1,19 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena
 #irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
 irf_path= '..' ## Jana auf Vollmond
-n_transient = 1
+n_transient = 10
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random
 random_flag=-r
-threshold = 5
-Ra = 36
-Dec =3.01
+threshold = 3.5
+Ra = 10
+Dec =10
 
 all: build/evaluation_20_$(threshold)_Ra$(Ra)_Dec$(Dec).txt
 
-build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 : simulate_cube.py | build
-	python simulate_cube.py -f $(irf_path) -n $(n_transient) -s $(num_slices_per_part) $(random_flag) -x $(Ra) -y $(Dec) -p False
+#build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 : simulate_cube.py | build
+#	python simulate_cube.py -f $(irf_path) -n $(n_transient) -s $(num_slices_per_part) $(random_flag) -x $(Ra) -y $(Dec) -p False
 
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 | build

@@ -28,15 +28,17 @@ def show_thresholds(N,ranges):
     '/home/jana/Schreibtisch/Projekt_Master/cta_transient_search/build/n{}_s60_trandom_thr{}_alert.hdf5'.format(N,i))
 
 
-    x  = np.arange(1,10,0.25)
-    plt.plot(x,fp/N, '.-',color=viridis3, label='False Positives')
+    x  = np.arange(1,ranges,0.25)
+    plt.plot(x,fp/N, '.-',color='#73ac14', label='False Positives')
     plt.plot(x,fn/N,'.-',color=viridis5, label='False Negatives (no trigger!)')
     plt.plot(x,tp/N,'.-',color=viridis10, label= 'true Positives')
     plt.xlabel('threshold / absolute difference to moving average')
     plt.ylabel('density')
-    plt.legend(loc='lower right')
+    plt.legend(loc='best')
     plt.savefig('build/Plots/n{}_s60_trandom_thresholds.pdf'.format(N))
-    plt.show()
+    plt.clf() 
 
 
 show_thresholds(150,10)
+show_thresholds(250,5)
+show_thresholds(100,10)
