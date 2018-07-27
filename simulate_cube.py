@@ -81,7 +81,7 @@ astropy tables:
 @click.option(
     '--cu_min',
     type=click.FLOAT,
-    help='Minimum transient brightness in crab units',
+    help='Minimal transient brightness in crab units',
     default=2
 )
 @click.option(
@@ -90,6 +90,12 @@ astropy tables:
     help='Maximum transient brightness in crab units',
     default=7
 )
+
+@click.argument(
+    'cu_bool',
+    type=click.INT,
+)
+
 @click.option(
     '--trans_pos_ra',
     '-x',
@@ -130,9 +136,11 @@ def main(
     bins_,
     cu_min,
     cu_max,
+    cu_bool,
     trans_pos_ra,
     trans_pos_dec
 ):
+    
     '''
     Load CTA IRFs and transient template
     '''
@@ -140,22 +148,6 @@ def main(
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
-# First Choice of used templates to interpolate : Problem of defining the truth
-    pks_data = np.loadtxt('data/PKS2155-flare06.dat', unpack=True)
-    hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
-
-# new Templates after fitting gaussian + exponential to data
-    simple,true_start_simple = simulate_Gaussians(1.8348,16.0364,num_slices,time_per_slice)
-    small,true_start_small = simulate_Gaussians(0.45,2.18,num_slices,time_per_slice)
-    exponential,true_start_exponential  = simulate_Exponential(3,6,0,2,num_slices,time_per_slice)
-
-    transient_templates = [simple,small,exponential]
-
-# Choose start of transient dependent on template
-    transient_start_slices = np.array([
-                                        true_start_simple,true_start_small,true_start_exponential
-                                        ]) #wihtin the 2nd cube, value between 0 and num_slices
-
     a_eff_cta_south = OrderedDict({
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
                                 "A_eff": data_A_eff.data['EFFAREA'][0]
@@ -165,6 +157,20 @@ def main(
                                     "E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2,
                                     "psf_sigma": data_ang_res.data['SIGMA_1'][0]
                                 })
+
+    '''
+    Choose Templates and Start Slices
+    '''
+    simple,true_start_simple = simulate_Gaussians(1.8348,16.0364,num_slices,time_per_slice)
+    small,true_start_small = simulate_Gaussians(0.45,2.18,num_slices,time_per_slice)
+    exponential,true_start_exponential  = simulate_Exponential(3,6,0,2,num_slices,time_per_slice)
+
+    transient_templates = [simple,small,exponential]
+
+    transient_start_slices = np.array([
+                                        true_start_simple,true_start_small,true_start_exponential
+                                        ]) #wihtin the 2nd cube, value between 0 and num_slices
+
 
     '''
     Start simulation
@@ -203,28 +209,44 @@ def main(
         trans_scales = np.append(trans_scales, np.zeros(num_slices))
 
         '''
-        Simulate slices with steady source and transient
+        Simulate slices with steady source and transient or just background / Steady Source depending on descision if trans. to be simulated
         '''
-        cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
+        if cu_bool == 1:
+            cu_flare = (cu_max - cu_min) * np.random.random() + cu_min
 
-        list_cu_flare.append(cu_flare)
+            list_cu_flare.append(cu_flare)
 
-        slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
-                    A_eff=a_eff_cta_south,
-                    fits_bg_rate=data_bg_rate,
-                    psf=psf_cta_south,
-                    cu_flare=cu_flare,
-                    pos_ra=trans_pos_ra,
-                    pos_dec=trans_pos_dec,
-                    transient_template=transient_templates[list_templates[i]],
-                    num_slices=num_slices,
-                    time_per_slice=time_per_slice * u.s,
-                    bins=[bins_, bins_],
-                    )
-        list_ra_transient.append(ra_transient)
-        list_dec_transient.append(dec_transient)
-        trans_scales = np.append(trans_scales, trans_scale)
-        slices = np.append(slices, slices_transient)
+            slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
+                        A_eff=a_eff_cta_south,
+                        fits_bg_rate=data_bg_rate,
+                        psf=psf_cta_south,
+                        cu_flare=cu_flare,
+                        pos_ra=trans_pos_ra,
+                        pos_dec=trans_pos_dec,
+                        transient_template=transient_templates[list_templates[i]],
+                        num_slices=num_slices,
+                        time_per_slice=time_per_slice * u.s,
+                        bins=[bins_, bins_],
+                        )
+            list_ra_transient.append(ra_transient)
+            list_dec_transient.append(dec_transient)
+            trans_scales = np.append(trans_scales, trans_scale)
+            slices = np.append(slices, slices_transient)
+        else:
+            cu_flare = 0
+            list_cu_flare.append(cu_flare)
+            slices_steady_source = simulate_steady_source(
+                        A_eff=a_eff_cta_south,
+                        fits_bg_rate=data_bg_rate,
+                        psf=psf_cta_south,
+                        num_slices=num_slices,
+                        time_per_slice=time_per_slice * u.s,
+                        bins=[bins_, bins_],
+                        )
+            list_ra_transient.append('nan')
+            list_dec_transient.append('nan')
+            slices = np.append(slices, slices_steady_source)
+            trans_scales = np.append(trans_scales, np.zeros(num_slices))
 
         '''
         Simulate slices containing one steady source and no transient
@@ -278,7 +300,10 @@ def main(
     trans_table.meta['bins'] = bins_
 
     cube_table.write('{}/n{}_s{}_t{}_cube.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
-    trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
+    if cu_bool == 1:
+        trans_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
+    else:
+        cube_table.write('{}/n{}_s{}_t{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, transient_template_filename), path='data', overwrite=True)
 
 
 if __name__ == '__main__':

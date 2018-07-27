@@ -89,7 +89,7 @@ def get_transient_position(
     '--threshold',
     '-t',
     help='Trigger threshold, default=6',
-    default=6
+    default=3.5
 )
 def main(
     input_file,  # ! .trigger nicht denoised table

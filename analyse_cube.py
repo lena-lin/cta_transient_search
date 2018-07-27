@@ -49,13 +49,13 @@ def wavelet_denoising_cube(
     '--n_bg_slices',
     '-s',
     help='Number of slices for background mean',
-    default=5
+    default=4
 )
 @click.option(
     '--gap',
     '-g',
     help='Minimal distance to sliding background window (number of slices). Will be enlarged by max. 3 slices if the number of slices for the resulting cube can not be divided by 4.',
-    default=5
+    default=4
 )
 def main(
     input_file,
@@ -95,7 +95,7 @@ def main(
 
     denoised_table.write('{}/n{}_s{}_t{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
-# Not needed anymore after changes in transient_alert.py 
+# Not needed anymore after changes in transient_alert.py
     trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2)})
     trans_factor_table.meta = cube_raw_table.meta
     trans_factor_table.write('{}/n{}_s{}_t{}_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
