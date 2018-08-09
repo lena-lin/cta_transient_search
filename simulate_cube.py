@@ -82,13 +82,13 @@ astropy tables:
     '--cu_min',
     type=click.FLOAT,
     help='Minimal transient brightness in crab units',
-    default=2
+    default=1
 )
 @click.option(
     '--cu_max',
     type=click.FLOAT,
     help='Maximum transient brightness in crab units',
-    default=7
+    default=10
 )
 
 @click.argument(
@@ -140,7 +140,7 @@ def main(
     trans_pos_ra,
     trans_pos_dec
 ):
-    
+
     '''
     Load CTA IRFs and transient template
     '''
@@ -282,6 +282,7 @@ def main(
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
+    cube_table['timeseries'] = list_transients
     cube_table['template'] = list_templates
     cube_table['num_flare_slices'] = num_slices
 

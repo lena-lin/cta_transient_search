@@ -18,7 +18,7 @@ def simulate_steady_source_with_transient(
             bins=[80, 80],
             E_min=0.1 * u.TeV,
             E_max=100 * u.TeV,
-            fov=12 * u.deg,
+            fov=8 * u.deg,
             ):
 
     cta_radius = 800 * u.m
@@ -42,7 +42,7 @@ def simulate_steady_source_with_transient(
                                          crab_coord.dec.deg + fov.value / 2 - fov.value / 10
                                          )
          theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
-         if theta > 1 and theta < 6:
+         if theta > 1 and theta < 4:
              valid_transient_position = True
 
     #ra_transient = crab_coord.ra.deg - fov.value / pos_ra

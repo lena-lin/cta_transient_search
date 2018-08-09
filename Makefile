@@ -1,7 +1,7 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena
 #irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
 irf_path= '..' ## Jana auf Vollmond
-n_transient = 4
+n_transient = 104
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random
@@ -13,7 +13,7 @@ cu_bool = 1
 all: build/evaluation_score.txt
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 : simulate_cube.py | build
-	python simulate_cube.py 3 -f $(irf_path) -n $(n_transient) -s $(num_slices_per_part) $(random_flag)
+	python simulate_cube.py 1 -f $(irf_path) -n $(n_transient) -s $(num_slices_per_part) $(random_flag)
 
 
 build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 | build
@@ -33,7 +33,7 @@ build/evaluation_score.txt: build/n$(n_transient)_s$(num_slices)_t$(transient_te
 
 build/evaluation_score.txt: evaluation.py  | build
 	python evaluation.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 \
-		build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 \ 3
+		build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 \ 1
 
 build:
 	mkdir -p build

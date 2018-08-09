@@ -88,7 +88,7 @@ def get_transient_position(
 @click.option(
     '--threshold',
     '-t',
-    help='Trigger threshold, default=6',
+    help='Trigger threshold, default=3.5',
     default=3.5
 )
 def main(
