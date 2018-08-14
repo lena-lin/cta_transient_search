@@ -109,11 +109,11 @@ def main(
 
         Sum_true, Sum_false, distances = evaluate(table_simulation, table_alert)
 
-        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        print('TP: {}\n FN: {}\n FP: {}\n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
         print('Predicted RA in FOV around Crab: ',table_alert['pred_position'][0][0] )
         print('Predicted DEC in FOV around Crab: ',table_alert['pred_position'][0][1] )
         print('Simulated transient at: ', table_simulation['position'][0][0], table_simulation['position'][0][1] )
-        print('True Position: {} \n False Position: {} \n  '.format(Sum_true, Sum_false))
+        print('True Position: {}\n False Position: {} \n  '.format(Sum_true, Sum_false))
         f = open('{}/evaluation_{}.txt'.format(output_path, num_cubes), 'w')
         f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
         f.writelines('\n Position evaluation: \n Number true positions: {} \n Number false positions: {} \n Distances between predited and true position for all transients in deg: \n {}'.format(Sum_true, Sum_false, distances))
