@@ -1,5 +1,7 @@
-irf_path='/home/lena/Documents/CTA'
-n_transient=10
+#irf_path='/home/lena/Documents/CTA' ## Lena
+#irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
+irf_path= '..' ## Jana auf Vollmond
+n_transient = 10
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random
@@ -7,18 +9,30 @@ random_flag=-r
 
 
 
-build/threshold_studies/n200_s60_t2_th5_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
-	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 5
+all: build/evaluation_score.txt
 
-build/threshold_studies/n200_s60_t2_th10_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
-	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 10
+build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 : simulate_cube.py | build
+	python simulate_cube.py -f $(irf_path) -n $(n_transient) -s $(num_slices_per_part) $(random_flag)
 
-build/threshold_studies/n200_s60_t2_th15_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
-	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 15
 
-build/threshold_studies/n200_s60_t2_th20_alert.hdf5 : transient_alert.py build/n200_s60_t2_denoised.hdf5 | build
-	python transient_alert.py build/n200_s60_t2_denoised.hdf5 --output_path build/threshold_studies -t 20
+build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 | build
 
+build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 : analyse_cube.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5 | build
+	python analyse_cube.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_cube.hdf5
+
+
+build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trigger.hdf5 : build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 | build
+
+build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 : transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5 | build
+	python transient_alert.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_denoised.hdf5
+
+build/evaluation_score.txt: build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5
+
+build/evaluation_score.txt: build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5
+
+build/evaluation_score.txt: evaluation.py  | build
+	python evaluation.py build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_trans.hdf5 \
+		build/n$(n_transient)_s$(num_slices)_t$(transient_template_filename)_alert.hdf5 \
 
 build:
 	mkdir -p build

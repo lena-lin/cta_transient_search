@@ -14,7 +14,7 @@ def simulate_steady_source_with_transient(
             pos_dec,
             transient_template,
             num_slices=100,
-            time_per_slice=30 * u.s,
+            time_per_slice=10 * u.s,
             bins=[80, 80],
             E_min=0.1 * u.TeV,
             E_max=100 * u.TeV,
@@ -23,31 +23,31 @@ def simulate_steady_source_with_transient(
 
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2
-    crab_coord = SkyCoord.from_name('Crab')
-
+    #crab_coord = SkyCoord.from_name('Crab')
+    crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
 
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
 
-    # valid_transient_position = False
-    # while not valid_transient_position:
-    #     ra_transient = np.random.randint(
-    #                                     crab_coord.ra.deg - fov.value / 2 + fov.value / 10,
-    #                                     crab_coord.ra.deg + fov.value / 2 - fov.value / 10
-    #                                     )
-    #     dec_transient = np.random.randint(
-    #                                     crab_coord.dec.deg - fov.value / 2 + fov.value / 10,
-    #                                     crab_coord.dec.deg + fov.value / 2 - fov.value / 10
-    #                                     )
-    #     theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
-    #     if theta > 1 and theta < 6:
-    #         valid_transient_position = True
+    valid_transient_position = False
+    while not valid_transient_position:
+         ra_transient = np.random.randint(
+                                         crab_coord.ra.deg - fov.value / 2 + fov.value / 10,
+                                         crab_coord.ra.deg + fov.value / 2 - fov.value / 10
+                                         )
+         dec_transient = np.random.randint(
+                                         crab_coord.dec.deg - fov.value / 2 + fov.value / 10,
+                                         crab_coord.dec.deg + fov.value / 2 - fov.value / 10
+                                         )
+         theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
+         if theta > 1 and theta < 6:
+             valid_transient_position = True
 
-    ra_transient = crab_coord.ra.deg - fov.value / pos_ra
-    dec_transient = crab_coord.dec.deg - fov.value / pos_dec
-    theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
+    #ra_transient = crab_coord.ra.deg - fov.value / pos_ra
+    #dec_transient = crab_coord.dec.deg - fov.value / pos_dec
+    #theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
 
     slices = []
     for i in range(num_slices):
@@ -124,7 +124,7 @@ def simulate_steady_source(
             fits_bg_rate,
             psf,
             num_slices,
-            time_per_slice=30 * u.s,
+            time_per_slice=10 * u.s,
             bins=[80, 80],
             E_min=0.1 * u.TeV,
             E_max=100 * u.TeV,
@@ -132,7 +132,8 @@ def simulate_steady_source(
         ):
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2
-    crab_coord = SkyCoord.from_name('Crab')
+    #crab_coord = SkyCoord.from_name('Crab')  ## Astropy exception handling in 'from_name', BUGG :(
+    crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
 
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)

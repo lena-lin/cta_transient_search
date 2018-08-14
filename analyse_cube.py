@@ -18,7 +18,9 @@ def wavelet_denoising_cube(
 ):
         cube_without_steady_source = remove_steady_background_stationary(cube_raw, n_bg_slices, gap)
 
-        cube_denoised = []
+
+        cube_denoised = [np.zeros([80,80])]*(gap+n_bg_slices+n_wavelet_slices)
+        #cube_denoised = []
         for i in range(n_wavelet_slices, len(cube_without_steady_source)):
 
             coeffs = pywt.swtn(data=cube_without_steady_source[i-n_wavelet_slices:i], wavelet='bior1.3', level=2, start_level=0)
@@ -71,7 +73,7 @@ def main(
     except:
         n_transient = None
 
-    num_slices = cube_raw_table.meta['num_slices']
+    num_slices = cube_raw_table.meta['num_slices'] # in simulate_cube: 3*n_slices
 
     try:
         transient_template_index = cube_raw_table.meta['template']
@@ -90,11 +92,13 @@ def main(
 
     denoised_table.meta = cube_raw_table.meta
     denoised_table.meta['n_bg_slices'] = n_bg_slices
+    denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
     denoised_table.meta['gap'] = gap
     denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
 
     denoised_table.write('{}/n{}_s{}_t{}_tps{}_w{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, denoised_table.meta['time_per_slice'], n_wavelet_slices), path='data', overwrite=True)
 
+# Not needed anymore after changes in transient_alert.py 
     trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2)})
     trans_factor_table.meta = denoised_table.meta
     trans_factor_table.write('{}/n{}_s{}_t{}_tps{}_w{}_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, denoised_table.meta['time_per_slice'], n_wavelet_slices), path='data', overwrite=True)
