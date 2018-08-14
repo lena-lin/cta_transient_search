@@ -145,28 +145,16 @@ def main(
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
-    simple,true_start_simple = simulate_Gaussians(1.8348,16.0364,num_slices,time_per_slice)
-    small,true_start_small = simulate_Gaussians(0.45,2.18,num_slices,time_per_slice)
-    exponential,true_start_exponential  = simulate_Exponential(3,6,0,2,num_slices,time_per_slice)
+    simple, true_start_simple = simulate_Gaussians(1.8348, 16.0364, num_slices, time_per_slice)
+    small, true_start_small = simulate_Gaussians(0.45, 2.18, num_slices, time_per_slice)
+    exponential, true_start_exponential = simulate_Exponential(3, 6, 0, 2, num_slices, time_per_slice)
 
-    transient_templates = [simple,small,exponential]
+    transient_templates = [simple, small, exponential]
 
 # Choose start of transient dependent on template
-<<<<<<< HEAD
-    transient_start_slices = np.array(
-                                        [
-                                            num_slices//2 - 5,
-                                            num_slices//2 - 3,
-                                            num_slices//2 - 1,
-                                            num_slices//2,
-                                            num_slices//2 - round(1/3 * num_slices)
-                                        ]
-                                    )
-=======
     transient_start_slices = np.array([
-                                        true_start_simple,true_start_small,true_start_exponential
-                                        ]) #wihtin the 2nd cube, value between 0 and num_slices
->>>>>>> 8aec58d4ffde7d3bb8249f625aa191953f7d515f
+                                        true_start_simple, true_start_small, true_start_exponential
+                                        ])  # within the 2nd cube, value between 0 and num_slices
 
     a_eff_cta_south = OrderedDict({
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
@@ -268,7 +256,7 @@ def main(
     trans_table['position'] = list_transient_positions
     # start slice for templates, dependent on template index + num_slices
     trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices # add first empty cube, but not added in evaluation.py
-    #end slice arbitrary!! Not used so far
+    # end slice arbitrary!! Not used so far
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes
