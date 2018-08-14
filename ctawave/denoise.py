@@ -18,6 +18,23 @@ def remove_steady_background(
     return slices
 
 
+def remove_steady_background_stationary(
+            cube_raw,
+            n_bg_slices,
+            gap
+        ):
+    '''
+    Remove background by mean over fixed window (without transient)
+    to be sure that transient is not substracted from current slice
+    '''
+    mean_slice = cube_raw[:n_bg_slices+gap].mean(axis=0)
+
+    cube_smoothed = cube_raw - mean_slice
+
+    return cube_smoothed
+
+
+
 def thresholding_3d(
             coefficient_list,
             sigma_d=2,
