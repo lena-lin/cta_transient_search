@@ -1,9 +1,10 @@
 # CTA Transient Search
-## Basis idea
+## Basic idea
 Use Wavelet Denoising to find transients in CTA DL3 data. This data consists of 2d histograms containing number of gammalike events per ra/dec bin. Each histogram represents a short duration of observation (around 30 seconds). In this case a steady source (crab), a number of transients and the cosmic ray background is simulated. Wavelet Denoising is used to clean the
 images/histograms from background-noise (see animation below). From the cleaned imgages a trigger criterion is extracted and monitored over time to find objects with high variability in CTA data.
 
 ## How to simulate ? 
+**make** 
 Makefile settings: 
 - irf path - path to CTA's IRF simulations 
 - n_transients = Number simulated transients
@@ -15,7 +16,7 @@ Makefile settings:
 ## Branches 
 ### Different_Threshold_Studies
 same setting compared to branch master with additional functions to plot some settings 
-### new_background_studoes 
+### new_background_studies 
 Additional component if a transient is simulated or not --> Easy way to get a false alarm rate 
 ### threshold studies 
 Old branch for same studies as in Different_Threshold_Studies 
