@@ -153,15 +153,15 @@ def main(
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
-    simple,true_start_simple = simulate_Gaussians(1.8348,16.0364,num_slices,time_per_slice)
-    small,true_start_small = simulate_Gaussians(0.45,2.18,num_slices,time_per_slice)
-    exponential,true_start_exponential  = simulate_Exponential(3,6,0,2,num_slices,time_per_slice)
+    simple, true_start_simple = simulate_Gaussians(1.8348, 16.0364, num_slices, time_per_slice)
+    small, true_start_small = simulate_Gaussians(0.45, 2.18, num_slices, time_per_slice)
+    exponential, true_start_exponential  = simulate_Exponential(3, 6, 0, 2, num_slices, time_per_slice)
 
     transient_templates = [simple,small,exponential]
 
 # Choose start of transient dependent on template
     transient_start_slices = np.array([
-                                        true_start_simple,true_start_small,true_start_exponential
+                                        true_start_simple, true_start_small, true_start_exponential
                                         ]) #wihtin the 2nd cube, value between 0 and num_slices
 
     a_eff_cta_south = OrderedDict({
