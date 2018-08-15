@@ -89,26 +89,12 @@ def evaluate(table_simulation, table_alert):
             distance = np.sqrt(diff_dec**2+diff_ra**2)
             distances.append(distance)
             #print(distance)
-            if distance <= 1:
+            if distance <= 1: #in degree
                 sum_true += 1
             else:
                 sum_false += 1
         return sum_true, sum_false , distances
 
-
-
-def evaluations(
-    input_simulation,  # Trans
-    input_alert, # Alert
-):
-        table_simulation = Table.read(input_simulation, path='data')
-        table_alert = Table.read(input_alert, path='data')
-        threshold = table_alert.meta['threshold']
-        num_cubes = table_simulation.meta['n_transient']
-        sum_trigger, tp, fp, fn = metrics(table_simulation, table_alert)
-
-        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
-        return tp,fp,fn
 
 
 @click.command()
