@@ -25,6 +25,10 @@ def count_tp_fp_fn(ts, start_flare):
         tp = np.abs(rt - start_flare) <= 3
         fp = np.abs(rt - start_flare) > 3
         fn = 0
+    #if tp == 0:
+    #    fn = 1
+    #else:
+    #    fn = 0
     else:
         print(' not detected ! simulated at:',start_flare)
         fn = 1
@@ -85,11 +89,26 @@ def evaluate(table_simulation, table_alert):
             distance = np.sqrt(diff_dec**2+diff_ra**2)
             distances.append(distance)
             #print(distance)
-            if distance <= 1: # in degree  
+            if distance <= 1:
                 sum_true += 1
             else:
                 sum_false += 1
         return sum_true, sum_false , distances
+
+
+
+def evaluations(
+    input_simulation,  # Trans
+    input_alert, # Alert
+):
+        table_simulation = Table.read(input_simulation, path='data')
+        table_alert = Table.read(input_alert, path='data')
+        threshold = table_alert.meta['threshold']
+        num_cubes = table_simulation.meta['n_transient']
+        sum_trigger, tp, fp, fn = metrics(table_simulation, table_alert)
+
+        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        return tp,fp,fn
 
 
 @click.command()
@@ -117,15 +136,19 @@ def main(
 
         Sum_true, Sum_false, distances = evaluate(table_simulation, table_alert)
 
-        print('TP: {}\n FN: {}\n FP: {}\n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
         print('Predicted RA in FOV around Crab: ',table_alert['pred_position'][0][0] )
         print('Predicted DEC in FOV around Crab: ',table_alert['pred_position'][0][1] )
         print('Simulated transient at: ', table_simulation['position'][0][0], table_simulation['position'][0][1] )
-        print('True Position: {}\n False Position: {} \n  '.format(Sum_true, Sum_false))
-        f = open('{}/evaluation_{}.txt'.format(output_path, num_cubes), 'w')
+        print('True Position: {} \n False Position: {} \n  '.format(Sum_true, Sum_false))
+        f = open('build/evaluation_{}_{}.txt'.format(num_cubes,threshold), 'w')
         f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
+        f.writelines('\n If Position bool was False, the transient was simulated at RA/DEC =: {}{}'.format(Ra_trans,Dec_trans))
         f.writelines('\n Position evaluation: \n Number true positions: {} \n Number false positions: {} \n Distances between predited and true position for all transients in deg: \n {}'.format(Sum_true, Sum_false, distances))
         f.close()
+
+        return tp,fp,fn
+
 
 
 if __name__ == '__main__':
