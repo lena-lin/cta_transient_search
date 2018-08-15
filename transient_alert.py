@@ -161,7 +161,7 @@ def main(
     alert_table.meta = denoised_table.meta
     alert_table.meta['threshold'] = threshold
     #alert_table.write('{}/n{}_s{}_t{}_th{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, threshold), path='data', overwrite=True)
-    alert_table.write('{}/n{}_s{}_t{}_thr{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index,threshold), path='data', overwrite=True)
+    alert_table.write('{}/n{}_s{}_t{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index,threshold), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
