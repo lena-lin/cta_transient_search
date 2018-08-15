@@ -82,7 +82,7 @@ astropy tables:
     '--cu_min',
     type=click.FLOAT,
     help='Minimum transient brightness in crab units',
-    default=1
+    default=8
 )
 @click.option(
     '--cu_max',
@@ -154,7 +154,7 @@ def main(
 # Choose start of transient dependent on template
     transient_start_slices = np.array([
                                         true_start_simple, true_start_small, true_start_exponential
-                                        ])  # within the 2nd cube, value between 0 and num_slices
+                                        ])
 
     a_eff_cta_south = OrderedDict({
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,

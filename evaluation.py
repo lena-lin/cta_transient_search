@@ -17,15 +17,19 @@ def get_next_trigger(trigger_index, start_flare):
 
 
 def count_tp_fp_fn(ts, start_flare):
-    rt, = np.where(np.diff(ts.astype(int)) == 1)
-    rt += 1    # np.where docu
-    print('detected at:',rt,'simulated at:',start_flare,'with', np.abs(rt - start_flare))
-    tp = np.any(np.abs(rt - start_flare) <= 3)
-    fp = len(rt) - tp
-    if tp == 0:
-        fn = 1
-    else:
+    trigger, = np.where(np.diff(ts.astype(int)) == 1)
+    if len(trigger) !=0:
+        rt = trigger[0]+1    # np.where docu
+    #rt = trigger+1  as an array
+        print('detected at:',rt,'simulated at:',start_flare,'with', np.abs(rt - start_flare))
+        tp = np.abs(rt - start_flare) <= 3
+        fp = np.abs(rt - start_flare) > 3
         fn = 0
+    else:
+        print(' not detected ! simulated at:',start_flare)
+        fn = 1
+        tp = 0
+        fp = 0
 
     return tp, fp, fn
 
