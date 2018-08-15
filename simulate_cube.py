@@ -82,7 +82,7 @@ astropy tables:
     '--cu_min',
     type=click.FLOAT,
     help='Minimum transient brightness in crab units',
-    default=8
+    default=1
 )
 @click.option(
     '--cu_max',
@@ -268,7 +268,7 @@ def main(
     cube_table.meta['template'] = transient_template_filename
     cube_table.meta['time_per_slice'] = time_per_slice
     cube_table.meta['bins'] = bins_
-    cube_table.meta['fov'] = 12 * u.deg
+    cube_table.meta['fov'] = 8 * u.deg
     cube_table.meta['steady_source'] = 'Crab'
 
     trans_table.meta['n_transient'] = n_transient

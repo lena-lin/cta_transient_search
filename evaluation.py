@@ -85,7 +85,7 @@ def evaluate(table_simulation, table_alert):
             distance = np.sqrt(diff_dec**2+diff_ra**2)
             distances.append(distance)
             #print(distance)
-            if distance <= 1:
+            if distance <= 1: # in degree  
                 sum_true += 1
             else:
                 sum_false += 1
@@ -107,7 +107,11 @@ def main(
     output_path,
 ):
         table_simulation = Table.read(input_simulation, path='data')
+        Trans_position = table_simulation['position']
+        Ra_trans = Trans_position[0][0]  # Each transient at the same Ra/Decs
+        Dec_trans = Trans_position[0][1]
         table_alert = Table.read(input_alert, path='data')
+        threshold = table_alert.meta['threshold']
         num_cubes = table_simulation.meta['n_transient']
         sum_trigger, tp, fp, fn = metrics(table_simulation, table_alert)
 
