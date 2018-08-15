@@ -82,13 +82,13 @@ astropy tables:
     '--cu_min',
     type=click.FLOAT,
     help='Minimum transient brightness in crab units',
-    default=2
+    default=1
 )
 @click.option(
     '--cu_max',
     type=click.FLOAT,
     help='Maximum transient brightness in crab units',
-    default=7
+    default=10
 )
 @click.option(
     '--trans_pos_ra',
@@ -109,7 +109,7 @@ astropy tables:
     '-s',
     type=click.INT,
     help='Number of slices per simulation. Size cube = 3*num_slices!!!!',
-    default='40'
+    default='20'
 )
 @click.option(
     '--bins_',
