@@ -76,34 +76,6 @@ def get_transient_position(
 
     return list_positions
 
-def make_table(input_file,  # ! denoised table
-    threshold
-):
-    table_den = Table.read(input_file, path='data')
-    trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
-    trans_factor_table.meta = table_den.meta
-    denoised_table = get_smoothed_table(trans_factor_table)
-    trigger_index, found_trigger = send_alert(denoised_table, threshold)
-    n_transient = denoised_table.meta['n_transient']
-    num_slices = denoised_table.meta['num_slices']
-    transient_template_index = denoised_table.meta['template']
-
-    num_slices = denoised_table.meta['num_slices']
-    alert_table = Table()
-    alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
-    alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
-    alert_table['trans_factor_diff'] = denoised_table['trans_factor_diff']  # time trigger criterion
-    alert_table['pred_position'] = get_transient_position(
-                                             table_den['cube_smoothed'],
-                                             trigger_index, denoised_table.meta['fov'],
-                                             denoised_table.meta['bins'],
-                                             denoised_table.meta['steady_source']
-                                         )
-    alert_table.meta = denoised_table.meta
-    alert_table.meta['threshold'] = threshold
-    alert_table.write('build/n{}_s{}_t{}_thr{}_alert.hdf5'.format(n_transient, num_slices, transient_template_index,threshold), path='data', overwrite=True)
-
-
 
 
 @click.command()
