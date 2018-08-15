@@ -18,7 +18,6 @@ from New_LC_forms import simulate_Gaussians,simulate_Exponential # New test
 Simulation (cubes) for a transient in the field of view of a steady source.
 3 simulation parts per cube: steady source, steady source with transient, steady source.
 Every part contains 'num_slices' images/slices.
-
 Returns:
 astropy tables:
 1. cube_table: 'n_transient' cubes with  size [3*num_slices, bins_, bins_]
@@ -93,23 +92,30 @@ astropy tables:
 @click.option(
     '--trans_pos_ra',
     '-x',
-    type=click.INT,
-    help='Ra Transient (Ration FoV!!): crab_coord.ra.deg - fov.value / X',
+    type=click.FLOAT,
+    help='Ra Transient (Ration FoV!!): crab_coord.ra.deg - fov.value / X: Enter value with abs() larger than 2.5',
     default=8
 )
 @click.option(
     '--trans_pos_dec',
     '-y',
-    type=click.INT,
-    help='Dec Transient (Ration FoV!!): crab_coord.dec.deg - fov.value / Y',
+    type=click.FLOAT,
+    help='Dec Transient (Ration FoV!!): crab_coord.dec.deg - fov.value / Y:  Enter value with abs() larger than 2.5',
     default=8
+)
+@click.option(
+    '--boolean_position',
+    '-p',
+    type=click.BOOL,
+    help='Boolean set True if position should get randomly drag',
+    default=True
 )
 @click.option(
     '--num_slices',
     '-s',
     type=click.INT,
     help='Number of slices per simulation. Size cube = 3*num_slices!!!!',
-    default='20'
+    default='40'
 )
 @click.option(
     '--bins_',
@@ -131,8 +137,10 @@ def main(
     cu_min,
     cu_max,
     trans_pos_ra,
-    trans_pos_dec
+    trans_pos_dec,
+    boolean_position
 ):
+
     '''
     Load CTA IRFs and transient template
     '''
@@ -145,16 +153,16 @@ def main(
     hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
-    simple, true_start_simple = simulate_Gaussians(1.8348, 16.0364, num_slices, time_per_slice)
-    small, true_start_small = simulate_Gaussians(0.45, 2.18, num_slices, time_per_slice)
-    exponential, true_start_exponential = simulate_Exponential(3, 6, 0, 2, num_slices, time_per_slice)
+    simple,true_start_simple = simulate_Gaussians(1.8348,16.0364,num_slices,time_per_slice)
+    small,true_start_small = simulate_Gaussians(0.45,2.18,num_slices,time_per_slice)
+    exponential,true_start_exponential  = simulate_Exponential(3,6,0,2,num_slices,time_per_slice)
 
-    transient_templates = [simple, small, exponential]
+    transient_templates = [simple,small,exponential]
 
 # Choose start of transient dependent on template
     transient_start_slices = np.array([
-                                        true_start_simple, true_start_small, true_start_exponential
-                                        ])
+                                        true_start_simple,true_start_small,true_start_exponential
+                                        ]) #wihtin the 2nd cube, value between 0 and num_slices
 
     a_eff_cta_south = OrderedDict({
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
@@ -216,6 +224,7 @@ def main(
                     cu_flare=cu_flare,
                     pos_ra=trans_pos_ra,
                     pos_dec=trans_pos_dec,
+                    pos_random = boolean_position,
                     transient_template=transient_templates[list_templates[i]],
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
@@ -256,7 +265,7 @@ def main(
     trans_table['position'] = list_transient_positions
     # start slice for templates, dependent on template index + num_slices
     trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices # add first empty cube, but not added in evaluation.py
-    # end slice arbitrary!! Not used so far
+    #end slice arbitrary!! Not used so far
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes

@@ -6,7 +6,7 @@ from IPython import embed
 
 from astropy.table import Table
 
-from ctawave.denoise import thresholding_3d, remove_steady_background, remove_steady_background_stationary
+from ctawave.denoise import thresholding_3d, remove_steady_background
 
 
 def wavelet_denoising_cube(
@@ -16,7 +16,7 @@ def wavelet_denoising_cube(
     bins,
     n_wavelet_slices,
 ):
-        cube_without_steady_source = remove_steady_background_stationary(cube_raw, n_bg_slices, gap)
+        cube_without_steady_source = remove_steady_background(cube_raw, n_bg_slices, gap)
 
 
         cube_denoised = [np.zeros([80,80])]*(gap+n_bg_slices+n_wavelet_slices)
@@ -24,13 +24,11 @@ def wavelet_denoising_cube(
         for i in range(n_wavelet_slices, len(cube_without_steady_source)):
 
             coeffs = pywt.swtn(data=cube_without_steady_source[i-n_wavelet_slices:i], wavelet='bior1.3', level=2, start_level=0)
-            ct = thresholding_3d(coeffs, k=75)
+            ct = thresholding_3d(coeffs, k=30)
             slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
             cube_denoised.append(slice_denoised)
 
-        cube_denoised = np.vstack([np.zeros([n_wavelet_slices, bins, bins]), np.asarray(cube_denoised)])
-
-        return cube_denoised
+        return np.asarray(cube_denoised)
 
 
 @click.command()
@@ -94,14 +92,13 @@ def main(
     denoised_table.meta['n_bg_slices'] = n_bg_slices
     denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
     denoised_table.meta['gap'] = gap
-    denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
 
-    denoised_table.write('{}/n{}_s{}_t{}_tps{}_w{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, denoised_table.meta['time_per_slice'], n_wavelet_slices), path='data', overwrite=True)
+    denoised_table.write('{}/n{}_s{}_t{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
 # Not needed anymore after changes in transient_alert.py
     trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2)})
     trans_factor_table.meta = denoised_table.meta
-    trans_factor_table.write('{}/n{}_s{}_t{}_tps{}_w{}_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, denoised_table.meta['time_per_slice'], n_wavelet_slices), path='data', overwrite=True)
+    trans_factor_table.write('{}/n{}_s{}_t{}_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
