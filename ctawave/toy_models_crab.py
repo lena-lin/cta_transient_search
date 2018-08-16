@@ -19,7 +19,7 @@ def simulate_steady_source_with_transient(
             bins=[80, 80],
             E_min=0.1 * u.TeV,
             E_max=100 * u.TeV,
-            fov=8 * u.deg,
+            fov=12 * u.deg,
             ):
 
     cta_radius = 800 * u.m
@@ -35,11 +35,11 @@ def simulate_steady_source_with_transient(
     if pos_random == True:
         valid_transient_position = False
         while not valid_transient_position:
-             ra_transient = np.random.randint(
-                                             crab_coord.ra.deg - fov.value / 2 + fov.value / 10,
-                                             crab_coord.ra.deg + fov.value / 2 - fov.value / 10
+             ra_transient = np.random.uniform(
+                                             crab_coord.ra.deg - fov.value / 2 ,#+ fov.value / 10,
+                                             crab_coord.ra.deg + fov.value / 2 #- fov.value / 10
                                              )
-             dec_transient = np.random.randint(
+             dec_transient = np.random.uniform(
                                              crab_coord.dec.deg - fov.value / 2 + fov.value / 10,
                                              crab_coord.dec.deg + fov.value / 2 - fov.value / 10
                                              )
@@ -131,7 +131,7 @@ def simulate_steady_source(
             bins=[80, 80],
             E_min=0.1 * u.TeV,
             E_max=100 * u.TeV,
-            fov=8* u.deg,
+            fov=12* u.deg,
         ):
     cta_radius = 800 * u.m
     sim_area = 2*np.pi*(2*cta_radius)**2

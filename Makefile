@@ -1,7 +1,7 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena
 #irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
 irf_path= '..' ## Jana auf Vollmond
-n_transient = 5
+n_transient = 420
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random
