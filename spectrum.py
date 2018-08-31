@@ -8,6 +8,7 @@ def random_power(e_min, e_max, N):
     '''
     index = 2.48
     u = np.random.uniform(0, 1, N)
+    # inverse transform sampling
     return ((e_max**(1-index) - e_min**(1-index)) * u + e_min**(1-index))**(1/(1-index))
 
 

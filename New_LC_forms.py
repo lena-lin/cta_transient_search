@@ -77,7 +77,7 @@ def simulate_Gaussians(sigma_range_min,sigma_range_max,Num_slices,time_per_slice
     '''
     Calculate True Startslice of the transient
     '''
-    True_Start = int(x_from_y_Gauss(0.05,y,sigma,mu)/time_per_slice) # Number of slice
+    True_Start = int(x_from_y_Gauss(0.8,y,sigma,mu)/time_per_slice) # Number of slice
     return ylin, True_Start
 
 
@@ -102,6 +102,6 @@ def simulate_Exponential(alpha_min,alpha_max,b_min,b_max,Num_slices,time_per_sli
     x2 =np.linspace(0,time,Num_slices)
     y2 = Step_exp(x2,params[0], params[1], params[2], params[3])
     y2 = y2/y2.max()
-    True_Start = int(tp/time_per_slice)
+    True_Start = int(tp/time_per_slice)+1
 
     return y2,True_Start

@@ -1,11 +1,11 @@
 #irf_path='/home/lena/Documents/CTA' ## Lena
 irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
-n_transient = 30
+n_transient = 17
 num_slices_per_part=20
 num_slices=60
 transient_template_filename=random
 random_flag=-r
-threshold = 4.0
+threshold = 3.0
 Ra = 10
 Dec =10
 
