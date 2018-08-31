@@ -38,3 +38,26 @@ def number_particles_crab(T, e_min, e_max, simulation_area):
     e_max = e_max.to(u.MeV)
 
     return int((simulation_area.to(u.cm**2)*C*T*E_0**(index)/(1-index))*((e_max)**(1-index) - (e_min)**(1-index)))
+
+def number_particles_trans(T, e_min, e_max, simulation_area,z):
+    '''
+    Returns the number of particles arriving from a pointlike source with known power law distribution and EBL attenuation
+
+    Parameters:
+    T: observation time
+    e_min: lower energy bound
+    e_max: upper energy bound
+    simulation_area: simulated area (twice CTA radius)
+    C: Constant flux factor
+    index: power lax index
+    z: Redshift
+    '''
+    index = 2.48
+    C = 5.7e-16 / (u.cm**2 * u.s * u.MeV)
+    E_0 = 0.3e6 * u.MeV
+    e_min = e_min.to(u.MeV)
+    e_max = e_max.to(u.MeV)
+    mean_e = (e_max+e_min)/2
+    
+
+    return int((simulation_area.to(u.cm**2)*C*T*E_0**(index)/(1-index))*((e_max)**(1-index) - (e_min)**(1-index)))
