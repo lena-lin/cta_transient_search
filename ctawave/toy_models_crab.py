@@ -3,6 +3,8 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord
 import spectrum
 import performance
+from scipy import stats
+gamma = stats.gamma
 
 
 def simulate_steady_source_with_transient(
@@ -28,9 +30,19 @@ def simulate_steady_source_with_transient(
     crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
     N_steady_source = spectrum.number_particles_crab(time_per_slice, E_min, E_max, sim_area)
     N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
+    '''
+    drag random redshift from gamma distribution
+    '''
+    drag_z = True
+    while(drag_z):
+        z = gamma.rvs(2.0820486455090523,size=1)
+        #z=0
+        if z<=1:
+            drag_z = False
 
+    N_transient = spectrum.number_particles_trans(time_per_slice, E_min, E_max, sim_area,z)
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
-    transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
+    transient_scale = (flare_interp/flare_interp.max() * N_transient*cu_flare).astype(int)
 
     if pos_random == True:
         valid_transient_position = False
