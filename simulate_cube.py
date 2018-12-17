@@ -3,15 +3,12 @@ import click
 import astropy.units as u
 
 from collections import OrderedDict
-from ctawave.toy_models_crab import simulate_steady_source_with_transient, simulate_steady_source
+from simulation.simulate_skymap import simulate_steady_source_with_transient, simulate_steady_source
 from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
 
-# from IPython import embed
-
-#from LC_forms import broad_gaussian, narrow_gaussian, deltapeak_exponential  # Old version
-from New_LC_forms import simulate_Gaussians,simulate_Exponential # New test
+from New_LC_forms import simulate_Gaussians, simulate_Exponential  # New test
 
 
 '''
@@ -41,7 +38,6 @@ astropy tables:
     '-f',
     type=click.Path(dir_okay=True),
     help='Directory for CTA Instrument Response Function (prod3b)',
-    #default='/home/lena/Dokumente/CTA'
     default='/home/lena/Dokumente/CTA'
 )
 @click.option(
@@ -148,21 +144,18 @@ def main(
     data_A_eff = cta_perf_fits['EFFECTIVE AREA']
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
-# First Choice of used templates to interpolate : Problem of defining the truth
-    pks_data = np.loadtxt('data/PKS2155-flare06.dat', unpack=True)
-    hess_data = np.loadtxt('data/LAT-GRB130427.dat', unpack=True)
 
 # new Templates after fitting gaussian + exponential to data
     simple, true_start_simple = simulate_Gaussians(1.8348, 16.0364, num_slices, time_per_slice)
     small, true_start_small = simulate_Gaussians(0.45, 2.18, num_slices, time_per_slice)
-    exponential, true_start_exponential  = simulate_Exponential(3, 6, 0, 2, num_slices, time_per_slice)
+    exponential, true_start_exponential = simulate_Exponential(3, 6, 0, 2, num_slices, time_per_slice)
 
-    transient_templates = [simple,small,exponential]
+    transient_templates = [simple, small, exponential]
 
 # Choose start of transient dependent on template
     transient_start_slices = np.array([
                                         true_start_simple, true_start_small, true_start_exponential
-                                        ]) #wihtin the 2nd cube, value between 0 and num_slices
+                                        ])  # wihtin the 2nd cube, value between 0 and num_slices
 
     a_eff_cta_south = OrderedDict({
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
@@ -224,7 +217,7 @@ def main(
                     cu_flare=cu_flare,
                     pos_ra=trans_pos_ra,
                     pos_dec=trans_pos_dec,
-                    pos_random = boolean_position,
+                    pos_random=boolean_position,
                     transient_template=transient_templates[list_templates[i]],
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
@@ -264,8 +257,8 @@ def main(
     trans_table['template'] = list_templates
     trans_table['position'] = list_transient_positions
     # start slice for templates, dependent on template index + num_slices
-    trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices # add first empty cube, but not added in evaluation.py
-    #end slice arbitrary!! Not used so far
+    trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices  # add first empty cube, but not added in evaluation.py
+    # end slice arbitrary!! Not used so far
     trans_table['end_flare'] = 12 + num_slices
 
     cube_table['cube'] = list_cubes

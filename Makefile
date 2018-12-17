@@ -1,5 +1,5 @@
-#irf_path='/home/lena/Documents/CTA' ## Lena
-irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
+irf_path='/home/lena/Dokumente/CTA' ## Lena
+#irf_path= '/home/jana/Schreibtisch/Projekt_Master' ## Jana
 n_transient = 17
 num_slices_per_part=20
 num_slices=60

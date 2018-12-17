@@ -4,8 +4,6 @@ from astropy.table import Table
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
-# from IPython import embed
-
 '''
     Send alerts by analysing the timeseries from analyse_cube.py
     Input: astropy table (hdf5) containing one timeseries per simulation of length num_slices (60)
@@ -57,25 +55,24 @@ def get_transient_position(
     bins,
     source,
 ):
-    #source_coordinates = SkyCoord.from_name(source)
+    # source_coordinates = SkyCoord.from_name(source)
     source_coordinates = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
     list_positions = []
     for trig, cube in zip(first_trigger, list_cubes):
-        if len(trig[trig!=False]) > 0:
-            trigger = np.where(np.diff(trig==1))[0][0]+1  # simple test with np.where
+        if len(trig[trig != False]) > 0:
+            trigger = np.where(np.diff(trig == 1))[0][0]+1  # simple test with np.where
             slice = cube[trigger]
             max_pos = np.unravel_index(np.argmax(slice), slice.shape)
             max_pos_ra = max_pos[0] * fov/bins + source_coordinates.ra.deg - fov/2
             max_pos_dec = max_pos[1] * fov/bins + source_coordinates.dec.deg - fov/2
-            #max_pos_ra = np.interp(max_pos[0],[0,bins],[source_coordinates.ra.deg - fov / 2,source_coordinates.ra.deg + fov / 2])
-            #max_pos_ra = np.interp(max_pos[1],[0,bins],[source_coordinates.dec.deg - fov / 2,source_coordinates.dec.deg + fov / 2])
+            # max_pos_ra = np.interp(max_pos[0],[0,bins],[source_coordinates.ra.deg - fov / 2,source_coordinates.ra.deg + fov / 2])
+            # max_pos_ra = np.interp(max_pos[1],[0,bins],[source_coordinates.dec.deg - fov / 2,source_coordinates.dec.deg + fov / 2])
         else:
             max_pos_ra = np.nan
             max_pos_dec = np.nan
         list_positions.append([max_pos_ra, max_pos_dec])
 
     return list_positions
-
 
 
 @click.command()
@@ -102,7 +99,6 @@ def main(
     trans_factor_table.meta = table_den.meta
     denoised_table = get_smoothed_table(trans_factor_table)
     trigger_index, found_trigger = send_alert(denoised_table, threshold)
-
 
     try:
         n_transient = denoised_table.meta['n_transient']
@@ -132,8 +128,7 @@ def main(
 
     alert_table.meta = denoised_table.meta
     alert_table.meta['threshold'] = threshold
-    #alert_table.write('{}/n{}_s{}_t{}_th{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, threshold), path='data', overwrite=True)
-    alert_table.write('{}/n{}_s{}_t{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index,threshold), path='data', overwrite=True)
+    alert_table.write('{}/n{}_s{}_t{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
 
 if __name__ == '__main__':

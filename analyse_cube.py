@@ -2,10 +2,7 @@ import pywt
 import click
 import numpy as np
 from tqdm import tqdm
-from IPython import embed
-
 from astropy.table import Table
-
 from ctawave.denoise import thresholding_3d, remove_steady_background
 
 
@@ -17,13 +14,16 @@ def wavelet_denoising_cube(
     n_wavelet_slices,
 ):
         cube_without_steady_source = remove_steady_background(cube_raw, n_bg_slices, gap)
+        cube_denoised = [np.zeros([80, 80])]*(gap+n_bg_slices+n_wavelet_slices)
 
-
-        cube_denoised = [np.zeros([80,80])]*(gap+n_bg_slices+n_wavelet_slices)
-        #cube_denoised = []
         for i in range(n_wavelet_slices, len(cube_without_steady_source)):
 
-            coeffs = pywt.swtn(data=cube_without_steady_source[i-n_wavelet_slices:i], wavelet='bior1.3', level=2, start_level=0)
+            coeffs = pywt.swtn(
+                            data=cube_without_steady_source[i-n_wavelet_slices:i],
+                            wavelet='bior1.3',
+                            level=2,
+                            start_level=0
+                        )
             ct = thresholding_3d(coeffs, k=30)
             slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
             cube_denoised.append(slice_denoised)
@@ -71,7 +71,7 @@ def main(
     except:
         n_transient = None
 
-    num_slices = cube_raw_table.meta['num_slices'] # in simulate_cube: 3*n_slices
+    num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
 
     try:
         transient_template_index = cube_raw_table.meta['template']

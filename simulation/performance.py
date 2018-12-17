@@ -1,5 +1,5 @@
 import numpy as np
-import spectrum
+from .spectrum import random_power
 import astropy.units as u
 from scipy import integrate, interpolate
 # from IPython import embed
@@ -44,7 +44,7 @@ def response(T, N, e_min, e_max, A_eff, simulation_area, theta):
     '''
 
     simulation_area = simulation_area.to(u.m**2)
-    events = spectrum.random_power(e_min, e_max, N)
+    events = random_power(e_min, e_max, N)
     folded_events = []
     if len(events) > 0:
         for e in events:

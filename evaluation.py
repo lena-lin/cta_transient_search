@@ -4,6 +4,7 @@ from astropy.table import Table
 
 # from IPython import embed
 
+
 def get_next_trigger(trigger_index, start_flare):
     list_trigger = []
     for i in range(len(trigger_index)):
@@ -18,19 +19,19 @@ def get_next_trigger(trigger_index, start_flare):
 
 def count_tp_fp_fn(ts, start_flare):
     trigger, = np.where(np.diff(ts.astype(int)) == 1)
-    if len(trigger) !=0:
+    if len(trigger) != 0:
         rt = trigger[0]+1    # np.where docu
-    #rt = trigger+1  as an array
-        print('detected at:',rt,'simulated at:',start_flare,'with', np.abs(rt - start_flare))
+    # rt = trigger+1  as an array
+        print('detected at:', rt, 'simulated at:', start_flare, 'with', np.abs(rt - start_flare))
         tp = np.abs(rt - start_flare) <= 3
         fp = np.abs(rt - start_flare) > 3
         fn = 0
-    #if tp == 0:
+    # if tp == 0:
     #    fn = 1
-    #else:
+    # else:
     #    fn = 0
     else:
-        print(' not detected ! simulated at:',start_flare)
+        print(' not detected ! simulated at:', start_flare)
         fn = 1
         tp = 0
         fp = 0
@@ -88,13 +89,12 @@ def evaluate(table_simulation, table_alert):
             diff_dec = abs(prediction[1] - truth[1])
             distance = np.sqrt(diff_dec**2+diff_ra**2)
             distances.append(distance)
-            #print(distance)
-            if distance <= 1: #in degree
+            # print(distance)
+            if distance <= 1:  # in degree
                 sum_true += 1
             else:
                 sum_false += 1
-        return sum_true, sum_false , distances
-
+        return sum_true, sum_false, distances
 
 
 @click.command()
@@ -108,7 +108,7 @@ def evaluate(table_simulation, table_alert):
 )
 def main(
     input_simulation,  # Trans
-    input_alert, # Alert
+    input_alert,  # Alert
     output_path,
 ):
         table_simulation = Table.read(input_simulation, path='data')
@@ -122,19 +122,18 @@ def main(
 
         Sum_true, Sum_false, distances = evaluate(table_simulation, table_alert)
 
-        print('TP: {} \n FN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
-        print('Predicted RA in FOV around Crab: ',table_alert['pred_position'][0][0] )
-        print('Predicted DEC in FOV around Crab: ',table_alert['pred_position'][0][1] )
-        print('Simulated transient at: ', table_simulation['position'][0][0], table_simulation['position'][0][1] )
+        print('TP: {} \nFN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        print('Predicted RA in FOV around Crab: ', table_alert['pred_position'][0][0])
+        print('Predicted DEC in FOV around Crab: ', table_alert['pred_position'][0][1])
+        print('Simulated transient at: ', table_simulation['position'][0][0], table_simulation['position'][0][1])
         print('True Position: {} \n False Position: {} \n  '.format(Sum_true, Sum_false))
-        f = open('build/evaluation_{}_{}.txt'.format(num_cubes,threshold), 'w')
+        f = open('build/evaluation_{}_{}.txt'.format(num_cubes, threshold), 'w')
         f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
-        f.writelines('\n If Position bool was False, the transient was simulated at RA/DEC =: {}{}'.format(Ra_trans,Dec_trans))
+        f.writelines('\n If Position bool was False, the transient was simulated at RA/DEC =: {}{}'.format(Ra_trans, Dec_trans))
         f.writelines('\n Position evaluation: \n Number true positions: {} \n Number false positions: {} \n Distances between predited and true position for all transients in deg: \n {}'.format(Sum_true, Sum_false, distances))
         f.close()
 
-        return tp,fp,fn
-
+        return tp, fp, fn
 
 
 if __name__ == '__main__':

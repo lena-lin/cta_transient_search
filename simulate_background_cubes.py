@@ -1,4 +1,3 @@
-import pandas as pd
 import click
 import astropy.units as u
 
@@ -7,8 +6,6 @@ from ctawave.toy_models_crab import simulate_steady_source
 from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
-
-from IPython import embed
 
 
 @click.command()
@@ -65,7 +62,6 @@ def main(
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
 
-
     a_eff_cta_south = OrderedDict(
                             {
                                 "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
@@ -104,8 +100,6 @@ def main(
 
     bg_table['cubes'] = slices
     bg_table.write('{}/n{}_s{}_bg.hdf5'.format(output_path, n_cubes, num_slices), path='data', overwrite=True)
-
-
 
 
 if __name__ == '__main__':
