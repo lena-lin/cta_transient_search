@@ -1,8 +1,8 @@
 import click
 import astropy.units as u
-import  numpy as np
+import numpy as np
 from collections import OrderedDict
-from ctawave.toy_models_crab import simulate_steady_source
+from simulation.simulate_skymap import simulate_steady_source
 from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
