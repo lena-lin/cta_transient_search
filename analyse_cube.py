@@ -96,7 +96,16 @@ def main(
     denoised_table.write('{}/n{}_s{}_t{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
 # Not needed anymore after changes in transient_alert.py
-    trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2)})
+    list_position_c = []
+
+    for c in list_cubes_denoised:
+        list_pos = []
+        for s in c:
+            list_pos.append(np.unravel_index(np.argmax(s, axis=None), s.shape))
+        list_position_c.append(list_pos)
+
+    trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2),
+                                'trigger_pos': list_position_c})
     trans_factor_table.meta = denoised_table.meta
     trans_factor_table.write('{}/n{}_s{}_t{}_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
