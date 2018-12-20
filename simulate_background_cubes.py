@@ -1,6 +1,6 @@
 import click
 import astropy.units as u
-
+import  numpy as np
 from collections import OrderedDict
 from ctawave.toy_models_crab import simulate_steady_source
 from astropy.io import fits
@@ -88,7 +88,7 @@ def main(
                     bins=[bins_, bins_],
                     )
 
-        slices.append(slices_steady_source)
+        slices = np.append(slices, slices_steady_source)
 
     bg_table = Table()
     bg_table.meta['n_cubes'] = n_cubes
