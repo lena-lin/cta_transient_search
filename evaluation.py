@@ -84,7 +84,7 @@ def evaluate(table_simulation, table_alert):
         sum_true = 0
         sum_false = 0
         distances = []
-        for prediction, truth in zip(table_alert['pred_position'], table_simulation['position']):
+        for prediction, truth in zip(table_alert['pred_position_coordinates'], table_simulation['position']):
             diff_ra = abs(prediction[0] - truth[0])
             diff_dec = abs(prediction[1] - truth[1])
             distance = np.sqrt(diff_dec**2+diff_ra**2)
@@ -122,11 +122,11 @@ def main(
 
         Sum_true, Sum_false, distances = evaluate(table_simulation, table_alert)
 
-        print('TP: {} \nFN: {} \n FP: {} \n Sum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
-        print('Predicted RA in FOV around Crab: ', table_alert['pred_position'][0][0])
-        print('Predicted DEC in FOV around Crab: ', table_alert['pred_position'][0][1])
+        print('TP: {} \nFN: {} \nFP: {} \nSum_Trigger: {}'.format(tp, fn, fp, sum_trigger))
+        print('Predicted RA in FOV around Crab: ', table_alert['pred_position_coordinates'][0][0])
+        print('Predicted DEC in FOV around Crab: ', table_alert['pred_position_coordinates'][0][1])
         print('Simulated transient at: ', table_simulation['position'][0][0], table_simulation['position'][0][1])
-        print('True Position: {} \n False Position: {} \n  '.format(Sum_true, Sum_false))
+        print('True Position: {} \nFalse Position: {} \n  '.format(Sum_true, Sum_false))
         f = open('build/evaluation_{}_{}.txt'.format(num_cubes, threshold), 'w')
         f.writelines('Number of simulated transients: {} \n TP: {} \n FN: {} \n FP: {}'.format(num_cubes, tp, fn, fp))
         f.writelines('\n If Position bool was False, the transient was simulated at RA/DEC =: {}{}'.format(Ra_trans, Dec_trans))
