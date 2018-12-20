@@ -21,8 +21,7 @@ def moving_average(timeseries, interval_size=10):
     return averages
 
 
-def get_smoothed_table(input_file):
-    table = input_file
+def get_smoothed_table(table):
     table['trans_factor_mov_avg'] = list(map(moving_average, table['trans_factor']))
     table['trans_factor_diff'] = table['trans_factor'] - table['trans_factor_mov_avg']
 
@@ -75,6 +74,26 @@ def get_transient_position(
     return list_positions
 
 
+def get_trigger_pixel(
+    table_trigger,
+    trigger_index,
+):
+    list_pos = []
+    for positions, index in zip(table_trigger['trigger_pos'], trigger_index):
+        list_pos.append((positions[index]).mean(axis=0))
+
+    return list_pos
+
+
+def get_position_from_pixel(pixel, bins, fov):
+    source_coordinates = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
+
+    ra = pixel[0] * fov/bins + source_coordinates.ra.deg - fov/2.
+    dec = pixel[1] * fov/bins + source_coordinates.dec.deg - fov/2.
+
+    return ra, dec
+
+
 @click.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
@@ -94,9 +113,10 @@ def main(
     output_path,
     threshold
 ):
-    table_den = Table.read(input_file, path='data')
-    trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
-    trans_factor_table.meta = table_den.meta
+    # table_den = Table.read(input_file, path='data')
+    # trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
+    # trans_factor_table.meta = table_den.meta
+    trans_factor_table = Table.read(input_file, path='data')
     denoised_table = get_smoothed_table(trans_factor_table)
     trigger_index, found_trigger = send_alert(denoised_table, threshold)
 
@@ -119,14 +139,20 @@ def main(
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
     alert_table['trans_factor_diff'] = denoised_table['trans_factor_diff']  # time trigger criterion
 
-    alert_table['pred_position'] = get_transient_position(
-                                         table_den['cube_smoothed'],
-                                         trigger_index, denoised_table.meta['fov'],
-                                         denoised_table.meta['bins'],
-                                         denoised_table.meta['steady_source']
+    alert_table['pred_position_pixel'] = get_trigger_pixel(
+                                         trans_factor_table,
+                                         trigger_index,
                                      )
 
-    alert_table.meta = denoised_table.meta
+    alert_table['pred_position_coordinates'] = [
+                                                get_position_from_pixel(
+                                                                        p,
+                                                                        trans_factor_table.meta['bins'],
+                                                                        trans_factor_table.meta['fov']
+                                                                    ) for p in alert_table['pred_position_pixel']
+                                            ]
+
+    alert_table.meta = trans_factor_table.meta
     alert_table.meta['threshold'] = threshold
     alert_table.write('{}/n{}_s{}_t{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
 
