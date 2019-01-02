@@ -62,32 +62,28 @@ def main(
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
 
-    a_eff_cta_south = OrderedDict(
-                            {
-                                "E_TeV": (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0])/2,
-                                "A_eff": data_A_eff.data['EFFAREA'][0]
-                            }
-                        )
+    a_eff_cta_south = OrderedDict([
+        ("E_TeV", (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0]) / 2),
+        ("A_eff", data_A_eff.data['EFFAREA'][0]),
+    ])
 
-    psf_cta_south = OrderedDict(
-                                {
-                                    "E_TeV": (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2,
-                                    "psf_sigma": data_ang_res.data['SIGMA_1'][0]
-                                }
-                            )
+    psf_cta_south = OrderedDict([
+        ("E_TeV", (data_ang_res.data['ENERG_LO'][0] + data_ang_res.data['ENERG_HI'][0])/2),
+        ("psf_sigma", data_ang_res.data['SIGMA_1'][0])
+    ])
 
     slices = []
     for i in tqdm(range(n_cubes)):
 
         slices_steady_source = simulate_steady_source(
-                    A_eff=a_eff_cta_south,
-                    fits_bg_rate=data_bg_rate,
-                    psf=psf_cta_south,
-                    num_slices=num_slices,
-                    time_per_slice=time_per_slice * u.s,
-                    bins=[bins_, bins_],
-                    )
-
+            A_eff=a_eff_cta_south,
+            fits_bg_rate=data_bg_rate,
+            psf=psf_cta_south,
+            num_slices=num_slices,
+            time_per_slice=time_per_slice * u.s,
+            bins=[bins_, bins_],
+        )
+        print(slices[-1].shape)
         slices.append(slices_steady_source)
 
     bg_table = Table()

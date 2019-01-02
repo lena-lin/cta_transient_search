@@ -9,38 +9,36 @@ import h5py
 from collections import deque
 
 
+def analyze_images(path, n_wavelet_slices, bg_slices):
 
-def analyze_images(path, n_wavelet_slices):
-    n_wavelet_slices = 8
-    bg_slices = 5
-    
     with h5py.File(path) as f:
         data = f['data']
         bins = data.attrs['bins']
         n_images = data.shape[0] // bins // bins
 
         images = data[:n_wavelet_slices * bins * bins]['cubes'].reshape(-1, bins, bins)
-    
-        
+
+        cube_denoised = [np.zeros([80, 80])]*(n_wavelet_slices)
         for i in range(n_wavelet_slices, n_images):
 
-            cube_without_steady_source = remove_steady_background(images, bd_slices, n_wavelet_slices - bg_slices )
-            cube_denoised = [np.zeros([80, 80])]*(n_wavelet_slices)
-            
+            cube_without_steady_source = remove_steady_background(images, bg_slices, n_wavelet_slices - bg_slices)
+
             coeffs = pywt.swtn(
-                data=images,
+                data=cube_without_steady_source,
                 wavelet='bior1.3',
                 level=2,
                 start_level=0
             )
             ct = thresholding_3d(coeffs, k=30)
             slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
-            from IPython import embed; embed()
 
             images[:-1] = images[1:]
             images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
 
-     
+            cube_denoised.append(slice_denoised)
+
+            return cube_denoised
+
 
 
 def wavelet_denoising_cube(
@@ -116,9 +114,9 @@ def main(
     list_cubes_denoised = []
     embed()
     for cube in tqdm(cube_raw_table['cubes']):
-	
         print(cube.shape)
-        cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins, n_wavelet_slices)
+        # cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins, n_wavelet_slices)
+        cube_denoised = analyze_images(input_file, 8, 5)
         list_cubes_denoised.append(cube_denoised)
 
     denoised_table = Table()

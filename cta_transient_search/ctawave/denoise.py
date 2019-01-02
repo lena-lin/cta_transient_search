@@ -34,6 +34,12 @@ def remove_steady_background_stationary(
     return cube_smoothed
 
 
+def remove_steady_source(cube, n_bg_slices, gap=None):
+    if gap == None:
+        gap = cube.shape[0] - n_bg_slices
+
+    return (cube[-1] - cube[:-(gap + n_bg_slices)].mean(axis=0))
+
 
 def thresholding_3d(
             coefficient_list,
