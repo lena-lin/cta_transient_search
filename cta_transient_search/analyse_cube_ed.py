@@ -11,14 +11,16 @@ from collections import deque
 
 def analyze_images(path, n_wavelet_slices, bg_slices, gap):
 
+    size_cube = n_wavelet_slices + bg_slices + gap
+
     with h5py.File(path) as f:
         data = f['data']
         bins = data.attrs['bins']
         n_images = data.shape[0] // bins // bins
 
-        images = data[:n_wavelet_slices * bins * bins]['cubes'].reshape(-1, bins, bins)
+        images = data[:size_cube * bins * bins]['cubes'].reshape(-1, bins, bins)
         queue_bg_sub = deque([])
-        cube_denoised = [np.zeros([80, 80])]*(n_wavelet_slices)
+        cube_denoised = [np.zeros([bins, bins])]*(size_cube - 1)
         for i in range(n_wavelet_slices, n_images):
             queue_bg_sub.append(images[bg_slices + gap - 1] - images[:bg_slices].mean(axis=0))
             if len(queue_bg_sub == n_wavelet_slices):
