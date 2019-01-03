@@ -22,7 +22,7 @@ def analyze_images(path, n_wavelet_slices, bg_slices):
         for i in range(n_wavelet_slices, n_images):
 
             cube_without_steady_source = remove_steady_background(images, bg_slices, n_wavelet_slices - bg_slices)
-
+            from IPython import embed; embed()
             coeffs = pywt.swtn(
                 data=cube_without_steady_source,
                 wavelet='bior1.3',
@@ -99,35 +99,33 @@ def main(
     n_bg_slices,
     gap,
 ):
-    cube_raw_table = Table.read(input_file, path='data')
-    slices=np.array(cube_raw_table['cubes']).reshape(360000, 80, 80)
-    cube_raw_table['cubes'] = [slices]
+    #cube_raw_table = Table.read(input_file, path='data')
+    #slices=np.array(cube_raw_table['cubes']).reshape(360000, 80, 80)
+    #cube_raw_table['cubes'] = [slices]
 
-    n_transient = cube_raw_table.meta.get('n_transient')
+    #n_transient = cube_raw_table.meta.get('n_transient')
 
-    num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
+    #num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
 
-    transient_template_index = cube_raw_table.meta.get('template')
+    #transient_template_index = cube_raw_table.meta.get('template')
 
-    bins = cube_raw_table.meta['bins']
+    #bins = cube_raw_table.meta['bins']
 
     list_cubes_denoised = []
-    embed()
-    for cube in tqdm(cube_raw_table['cubes']):
-        print(cube.shape)
-        # cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins, n_wavelet_slices)
-        cube_denoised = analyze_images(input_file, 8, 5)
-        list_cubes_denoised.append(cube_denoised)
+    #embed()
+    
+    cube_denoised = analyze_images(input_file, 16, 4)
+    list_cubes_denoised.append(cube_denoised)
 
     denoised_table = Table()
     denoised_table['cube_smoothed'] = list_cubes_denoised
 
-    denoised_table.meta = cube_raw_table.meta
-    denoised_table.meta['n_bg_slices'] = n_bg_slices
-    denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
-    denoised_table.meta['gap'] = gap
+    #denoised_table.meta = cube_raw_table.meta
+    #denoised_table.meta['n_bg_slices'] = n_bg_slices
+    #denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
+    #denoised_table.meta['gap'] = gap
 
-    denoised_table.write('{}/n{}_s{}_t{}_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
+    denoised_table.write('{}/bg_denoised.hdf5'.format(output_path), path='data', overwrite=True)
 
 # Not needed anymore after changes in transient_alert.py
     list_position_c = []
@@ -141,7 +139,7 @@ def main(
     trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2),
                                 'trigger_pos': list_position_c})
     trans_factor_table.meta = denoised_table.meta
-    trans_factor_table.write('{}/n{}_s{}_t{}_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
+    trans_factor_table.write('{}/bg_trigger.hdf5'.format(output_path), path='data', overwrite=True)
 
 
 if __name__ == '__main__':

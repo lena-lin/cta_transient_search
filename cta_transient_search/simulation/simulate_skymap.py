@@ -2,7 +2,7 @@ import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from .spectrum import number_particles_crab
-import cta_transient_search.simulation.performance as performance
+from simulation import  performance
 
 
 def simulate_steady_source_with_transient(
