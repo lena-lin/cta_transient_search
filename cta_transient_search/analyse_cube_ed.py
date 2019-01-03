@@ -9,7 +9,7 @@ import h5py
 from collections import deque
 
 
-def analyze_images(path, n_wavelet_slices, bg_slices):
+def analyze_images(path, n_wavelet_slices, bg_slices, gap):
 
     with h5py.File(path) as f:
         data = f['data']
@@ -17,27 +17,27 @@ def analyze_images(path, n_wavelet_slices, bg_slices):
         n_images = data.shape[0] // bins // bins
 
         images = data[:n_wavelet_slices * bins * bins]['cubes'].reshape(-1, bins, bins)
-
+        queue_bg_sub = deque([])
         cube_denoised = [np.zeros([80, 80])]*(n_wavelet_slices)
         for i in range(n_wavelet_slices, n_images):
+            queue_bg_sub.append(images[bg_slices + gap - 1] - images[:bg_slices].mean(axis=0))
+            if len(queue_bg_sub == n_wavelet_slices):
+                coeffs = pywt.swtn(
+                    data=np.asarray(queue_bg_sub),
+                    wavelet='bior1.3',
+                    level=2,
+                    start_level=0
+                )
+                ct = thresholding_3d(coeffs, k=30)
+                slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
+                cube_denoised.append(slice_denoised)
 
-            cube_without_steady_source = remove_steady_background(images, bg_slices, n_wavelet_slices - bg_slices)
-            from IPython import embed; embed()
-            coeffs = pywt.swtn(
-                data=cube_without_steady_source,
-                wavelet='bior1.3',
-                level=2,
-                start_level=0
-            )
-            ct = thresholding_3d(coeffs, k=30)
-            slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
+                queue_bg_sub.popleft()
 
-            images[:-1] = images[1:]
-            images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
+        images[:-1] = images[1:]
+        images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
 
-            cube_denoised.append(slice_denoised)
-
-            return cube_denoised
+    return cube_denoised
 
 
 
@@ -113,7 +113,7 @@ def main(
 
     list_cubes_denoised = []
     #embed()
-    
+
     cube_denoised = analyze_images(input_file, 16, 4)
     list_cubes_denoised.append(cube_denoised)
 
