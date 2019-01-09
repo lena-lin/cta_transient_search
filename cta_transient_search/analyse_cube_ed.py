@@ -20,10 +20,11 @@ def analyze_images(path, n_wavelet_slices, bg_slices, gap):
 
         images = data[:size_cube * bins * bins]['cubes'].reshape(-1, bins, bins)
         queue_bg_sub = deque([])
-        cube_denoised = [np.zeros([bins, bins])]*(size_cube - 1)
-        for i in range(n_wavelet_slices, n_images):
+        #cube_denoised = [np.zeros([bins, bins])]*(size_cube - 1)
+        trigger_val = []
+        for i in tqdm(range(size_cube, n_images)):
             queue_bg_sub.append(images[bg_slices + gap - 1] - images[:bg_slices].mean(axis=0))
-            if len(queue_bg_sub == n_wavelet_slices):
+            if len(queue_bg_sub) == n_wavelet_slices:
                 coeffs = pywt.swtn(
                     data=np.asarray(queue_bg_sub),
                     wavelet='bior1.3',
@@ -32,14 +33,15 @@ def analyze_images(path, n_wavelet_slices, bg_slices, gap):
                 )
                 ct = thresholding_3d(coeffs, k=30)
                 slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
-                cube_denoised.append(slice_denoised)
+                #cube_denoised.append(slice_denoised)
+                trigger_val.append(slice_denoised.max())
 
                 queue_bg_sub.popleft()
-
+                
         images[:-1] = images[1:]
         images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
 
-    return cube_denoised
+    return trigger_val
 
 
 
