@@ -4,6 +4,7 @@ import astropy.units as u
 
 from collections import OrderedDict
 from simulation.simulate_skymap import simulate_steady_source_with_transient, simulate_steady_source
+from simulation.performance import inverse_response_background, integrate_background
 from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
@@ -145,6 +146,11 @@ def main(
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
 
+    inv_F, cumsum_min = inverse_response_background(cta_perf_fits)
+    N_background_cta = integrate_background(data_bg_rate, time_per_slice)
+
+
+
 # new Templates after fitting gaussian + exponential to data
     simple, true_start_simple = simulate_Gaussians(1.8348, 16.0364, num_slices, time_per_slice)
     small, true_start_small = simulate_Gaussians(0.45, 2.18, num_slices, time_per_slice)
@@ -193,7 +199,9 @@ def main(
         '''
         slices_steady_source = simulate_steady_source(
                     A_eff=a_eff_cta_south,
-                    fits_bg_rate=data_bg_rate,
+                    N_background_cta=N_background_cta,
+                    inv_F=inv_F,
+                    cumsum_min=cumsum_min,
                     psf=psf_cta_south,
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
@@ -212,7 +220,9 @@ def main(
 
         slices_transient, trans_scale, ra_transient, dec_transient = simulate_steady_source_with_transient(
                     A_eff=a_eff_cta_south,
-                    fits_bg_rate=data_bg_rate,
+                    N_background_cta=N_background_cta,
+                    inv_F=inv_F,
+                    cumsum_min=cumsum_min,
                     psf=psf_cta_south,
                     cu_flare=cu_flare,
                     pos_ra=trans_pos_ra,
@@ -233,7 +243,9 @@ def main(
         '''
         slices_steady_source = simulate_steady_source(
                     A_eff=a_eff_cta_south,
-                    fits_bg_rate=data_bg_rate,
+                    N_background_cta=N_background_cta,
+                    inv_F=inv_F,
+                    cumsum_min=cumsum_min,
                     psf=psf_cta_south,
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,

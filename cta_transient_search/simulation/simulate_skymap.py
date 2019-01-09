@@ -2,12 +2,14 @@ import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from .spectrum import number_particles_crab
-from simulation import  performance
+from simulation import performance
 
 
 def simulate_steady_source_with_transient(
             A_eff,
-            fits_bg_rate,
+            N_background_cta,
+            inv_F,
+            cumsum_min,
             psf,
             cu_flare,
             pos_ra,
@@ -27,7 +29,6 @@ def simulate_steady_source_with_transient(
     #crab_coord = SkyCoord.from_name('Crab')
     crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
     N_steady_source = number_particles_crab(time_per_slice, E_min, E_max, sim_area)
-    N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
 
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
@@ -73,11 +74,10 @@ def simulate_steady_source_with_transient(
                                                 ang_res_steady_source,
                                             )
         RA_bg, DEC_bg = performance.sample_positions_background_random(
-                                                fits_bg_rate,
-                                                time_per_slice,
                                                 N_background_cta,
-                                                fov,
-                                                crab_coord,
+                                                inv_F,
+                                                cumsum_min,
+                                                crab_coord
                                             )
 
         if transient_scale[i] > 0:
@@ -124,7 +124,9 @@ def simulate_steady_source_with_transient(
 
 def simulate_steady_source(
             A_eff,
-            fits_bg_rate,
+            N_background_cta,
+            inv_F,
+            cumsum_min,
             psf,
             num_slices,
             time_per_slice=10 * u.s,
@@ -139,7 +141,6 @@ def simulate_steady_source(
     crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
 
     N_steady_source = number_particles_crab(time_per_slice, E_min, E_max, sim_area)
-    N_background_cta = performance.integrate_background(fits_bg_rate, time_per_slice)
     n_events = 0
 
     slices = []
@@ -164,10 +165,9 @@ def simulate_steady_source(
                                             ang_res_steady_source,
                                         )
         RA_bg, DEC_bg = performance.sample_positions_background_random(
-                                                fits_bg_rate,
-                                                time_per_slice,
                                                 N_background_cta,
-                                                fov,
+                                                inv_F,
+                                                cumsum_min,
                                                 crab_coord
                                             )
         RA = np.concatenate([RA_bg, RA_crab])

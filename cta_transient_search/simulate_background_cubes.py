@@ -1,8 +1,8 @@
 import click
 import astropy.units as u
-import numpy as np
 from collections import OrderedDict
 from simulation.simulate_skymap import simulate_steady_source
+from simulation.performance import inverse_response_background, integrate_background
 from astropy.io import fits
 from astropy.table import Table
 from tqdm import tqdm
@@ -62,6 +62,9 @@ def main(
     data_ang_res = cta_perf_fits['POINT SPREAD FUNCTION']
     data_bg_rate = cta_perf_fits['BACKGROUND']
 
+    inv_F, cumsum_min = inverse_response_background(cta_perf_fits)
+    N_background_cta = integrate_background(data_bg_rate, time_per_slice)
+
     a_eff_cta_south = OrderedDict([
         ("E_TeV", (data_A_eff.data['ENERG_LO'][0] + data_A_eff.data['ENERG_HI'][0]) / 2),
         ("A_eff", data_A_eff.data['EFFAREA'][0]),
@@ -76,14 +79,15 @@ def main(
     for i in tqdm(range(n_cubes)):
 
         slices_steady_source = simulate_steady_source(
-            A_eff=a_eff_cta_south,
-            fits_bg_rate=data_bg_rate,
-            psf=psf_cta_south,
-            num_slices=num_slices,
-            time_per_slice=time_per_slice * u.s,
-            bins=[bins_, bins_],
-        )
-        print(slices[-1].shape)
+                    A_eff=a_eff_cta_south,
+                    N_background_cta=N_background_cta,
+                    inv_F=inv_F,
+                    cumsum_min=cumsum_min,
+                    psf=psf_cta_south,
+                    num_slices=num_slices,
+                    time_per_slice=time_per_slice * u.s,
+                    bins=[bins_, bins_],
+                    )
         slices.append(slices_steady_source)
 
     bg_table = Table()
