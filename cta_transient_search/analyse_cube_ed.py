@@ -38,8 +38,8 @@ def analyze_images(path, n_wavelet_slices, bg_slices, gap):
 
                 queue_bg_sub.popleft()
                 
-        images[:-1] = images[1:]
-        images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
+            images[:-1] = images[1:]
+            images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
 
     return trigger_val
 
