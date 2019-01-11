@@ -9,7 +9,7 @@ import h5py
 from collections import deque
 
 
-def analyze_images(path, n_wavelet_slices, bg_slices, gap):
+def analyze_images(path, n_wavelet_slices=4, bg_slices=4, gap=4):
 
     size_cube = n_wavelet_slices + bg_slices + gap
 
@@ -37,9 +37,9 @@ def analyze_images(path, n_wavelet_slices, bg_slices, gap):
                 trigger_val.append(slice_denoised.max())
 
                 queue_bg_sub.popleft()
-                
-        images[:-1] = images[1:]
-        images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
+
+            images[:-1] = images[1:]
+            images[-1] = data[i * bins * bins: (i+1) * bins * bins]['cubes'].reshape(80, 80)
 
     return trigger_val
 
