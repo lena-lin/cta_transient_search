@@ -57,25 +57,24 @@ def number_particles_trans(T, e_min, e_max, simulation_area, Redshift):
     z: Redshift
     '''
     index = 2.48
-    C = 5.7e-10
-    E_0 = 0.3
-    emin = e_min.value
-    emax = e_max.value
+    C = 5.7e-16 / (u.cm**2 * u.s * u.MeV)
+    E_0 = 0.3e6 * u.MeV
+    e_min = e_min.to(u.MeV)
+    e_max = e_max.to(u.MeV)
+
     simulated_area = simulation_area.to(u.cm**2)
     sim_area = simulated_area.value
     mean_e = (emax+emin)/2
     z = Redshift[0]
 
-    #Tau = np.exp(-1.0*tau.opt_depth(z,mean_e))
-    #return int((simulation_area.to(u.cm**2)*C*T*E_0**(index)/(1-index))*((e_max)**(1-index) - (e_min)**(1-index))*Tau)
     '''
     integrate with quad to get more differenced EBL attenuation:
     integrate:  E**(-index)*np.exp(-1.0*tau.opt_depth(z,E)) from E_min to E_max
     '''
-    def new_powerlaw(E):
-        return E**(-index)*np.exp(-1.0*tau.opt_depth(z,E))
+    def spectrum_crab_ebl(z):
+         return lambda E : (C * (E/E_0) ** (-index) * np.exp(-1.0*tau.opt_depth(z,E.value))).value
 
-    I = quad(new_powerlaw,emin,emax)[0]
+    I = quad(spectrum_crab_ebl(z),emin,emax)[0]
 
     print('Simulated EBL attenuation with z= ',z,
     '\n N without EBL =',int((sim_area*C*T.value*E_0**(index)/(1-index))*((emax)**(1-index) - (emin)**(1-index))),
