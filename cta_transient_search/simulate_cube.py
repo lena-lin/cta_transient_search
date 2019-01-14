@@ -42,6 +42,27 @@ astropy tables:
     default='/home/lena/Dokumente/CTA'
 )
 @click.option(
+    '--time_per_slice',
+    '-t',
+    type=click.INT,
+    help='Observation time per slice in seconds',
+    default='10'
+)
+@click.option(
+    '--num_slices',
+    '-s',
+    type=click.INT,
+    help='Number of slices per simulation. Size cube = 3*num_slices!!!!',
+    default='40'
+)
+@click.option(
+    '--bins_',
+    '-b',
+    type=click.INT,
+    help='Number of ra/dec bins for simulated cube',
+    default='80'
+)
+@click.option(
     '--n_transient',
     '-n',
     type=click.INT,
@@ -68,13 +89,6 @@ astropy tables:
     default=0
 )
 @click.option(
-    '--time_per_slice',
-    '-t',
-    type=click.INT,
-    help='Observation time per slice in seconds',
-    default='10'
-)
-@click.option(
     '--cu_min',
     type=click.FLOAT,
     help='Minimum transient brightness in crab units',
@@ -85,6 +99,12 @@ astropy tables:
     type=click.FLOAT,
     help='Maximum transient brightness in crab units',
     default=10
+)
+@click.option(
+    '--boolean_position',
+    '-p',
+    help='Boolean set True if position should get randomly drag',
+    is_flag=True
 )
 @click.option(
     '--trans_pos_ra',
@@ -101,25 +121,11 @@ astropy tables:
     default=8
 )
 @click.option(
-    '--boolean_position',
-    '-p',
-    type=click.BOOL,
-    help='Boolean set True if position should get randomly drag',
-    default=True
-)
-@click.option(
-    '--num_slices',
-    '-s',
-    type=click.INT,
-    help='Number of slices per simulation. Size cube = 3*num_slices!!!!',
-    default='40'
-)
-@click.option(
-    '--bins_',
-    '-b',
-    type=click.INT,
-    help='Number of ra/dec bins for simulated cube',
-    default='80'
+    '--z_trans',
+    '-z',
+    type=click.FLOAT,
+    help='Redshift z for transient',
+    default=0
 )
 def main(
     output_path,
@@ -135,7 +141,8 @@ def main(
     cu_max,
     trans_pos_ra,
     trans_pos_dec,
-    boolean_position
+    boolean_position,
+    z_trans,
 ):
 
     '''
@@ -229,6 +236,7 @@ def main(
                     pos_dec=trans_pos_dec,
                     pos_random=boolean_position,
                     transient_template=transient_templates[list_templates[i]],
+                    z_trans=z_trans,
                     num_slices=num_slices,
                     time_per_slice=time_per_slice * u.s,
                     bins=[bins_, bins_],
