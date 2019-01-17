@@ -27,4 +27,4 @@ Change wavelet thresholding in k index and stationary methods
 ## Additional Code
 Simulations for finding usefull templates in different Repo stored [here](https://github.com/JanaMo/Transient_Simulation_Methods)
 
-![wavelet](https://raw.githubusercontent.com/mackaiver/wavelet-denoising/sliding_bg_window/transient_sw.gif)
+![wavelet](https://raw.githubusercontent.com/lena-lin/cta_transient_search/master/transient_wavelet_z0_cu3.gif)
