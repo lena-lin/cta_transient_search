@@ -1,7 +1,7 @@
 import numpy as np
 import astropy.units as u
 from astropy.coordinates import SkyCoord
-from .spectrum import number_particles_crab
+from .spectrum import number_particles_crab, number_particles_trans
 from simulation import performance
 
 
@@ -16,7 +16,8 @@ def simulate_steady_source_with_transient(
             pos_dec,
             pos_random,
             transient_template,
-            num_slices=100,
+            z_trans,
+            num_slices,
             time_per_slice=10 * u.s,
             bins=[80, 80],
             E_min=0.1 * u.TeV,
@@ -29,10 +30,11 @@ def simulate_steady_source_with_transient(
     #crab_coord = SkyCoord.from_name('Crab')
     crab_coord = SkyCoord('05 34 31.97 +22 00 52.1', unit=(u.hourangle, u.deg))
     N_steady_source = number_particles_crab(time_per_slice, E_min, E_max, sim_area)
+    N_transient_ebl = number_particles_trans(time_per_slice, E_min, E_max, sim_area, z_trans)
 
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
-    transient_scale = (flare_interp/flare_interp.max() * N_steady_source*cu_flare).astype(int)
-
+    transient_scale = (flare_interp/flare_interp.max() * N_transient_ebl*cu_flare).astype(int)
+    
     if pos_random == True:
         valid_transient_position = False
         while not valid_transient_position:
