@@ -34,7 +34,7 @@ def wavelet_denoising_cube(
 def gradient_benchmark(
     cube_raw
 ):
-    bins = cube_raw.shape(1)
+    bins = cube_raw.shape[1]
     grad = np.diff(cube_raw, axis=0)
     return np.vstack((np.zeros((1, bins, bins)), grad))
 
