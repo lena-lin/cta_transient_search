@@ -117,8 +117,8 @@ def main(
     # trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
     # trans_factor_table.meta = table_den.meta
     trans_factor_table = Table.read(input_file, path='data')
-    # denoised_table = get_smoothed_table(trans_factor_table)
-    trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor'], threshold)
+    trans_factor_table = get_smoothed_table(trans_factor_table)
+    trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor_diff'], threshold)
 
     try:
         n_transient = trans_factor_table.meta['n_transient']
