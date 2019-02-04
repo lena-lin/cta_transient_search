@@ -40,8 +40,8 @@ def get_next_trigger(trigger_index, start_flare):
     return np.asarray(list_trigger)
 
 
-def send_alert(table, threshold):
-    trigger_index = table['trans_factor_diff'] > threshold
+def send_alert(timeseries, threshold):
+    trigger_index = timeseries > threshold
     found_trigger = trigger_index.sum(axis=1)
 
     return trigger_index, found_trigger
@@ -117,27 +117,27 @@ def main(
     # trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
     # trans_factor_table.meta = table_den.meta
     trans_factor_table = Table.read(input_file, path='data')
-    denoised_table = get_smoothed_table(trans_factor_table)
-    trigger_index, found_trigger = send_alert(denoised_table, threshold)
+    # denoised_table = get_smoothed_table(trans_factor_table)
+    trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor'], threshold)
 
     try:
-        n_transient = denoised_table.meta['n_transient']
+        n_transient = trans_factor_table.meta['n_transient']
     except:
         n_transient = None
 
-    num_slices = denoised_table.meta['num_slices']
+    num_slices = trans_factor_table.meta['num_slices']
 
     try:
-        transient_template_index = denoised_table.meta['template']
+        transient_template_index = trans_factor_table.meta['template']
     except:
         transient_template_index = None
 
-    num_slices = denoised_table.meta['num_slices']
+    num_slices = trans_factor_table.meta['num_slices']
 
     alert_table = Table()
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
-    alert_table['trans_factor_diff'] = denoised_table['trans_factor_diff']  # time trigger criterion
+    # alert_table['trans_factor_diff'] = denoised_table['trans_factor_diff']  # time trigger criterion
 
     alert_table['pred_position_pixel'] = get_trigger_pixel(
                                          trans_factor_table,
