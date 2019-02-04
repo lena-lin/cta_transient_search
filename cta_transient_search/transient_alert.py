@@ -13,8 +13,8 @@ import astropy.units as u
 
 
 def moving_average(timeseries, interval_size=10):
-    list_averages = np.zeros(interval_size).tolist()
-    for i in range(interval_size, len(timeseries)):
+    list_averages = np.zeros(interval_size+1).tolist()
+    for i in range(interval_size+1, len(timeseries)):
         list_averages.append(timeseries[i-interval_size:i].mean())
     averages = np.asarray(list_averages)
 
