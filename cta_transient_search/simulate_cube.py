@@ -204,19 +204,19 @@ def main(
         '''
         Simulate slices containing one steady source and no transient
         '''
-        slices_steady_source = simulate_steady_source(
-                    A_eff=a_eff_cta_south,
-                    N_background_cta=N_background_cta,
-                    inv_F=inv_F,
-                    cumsum_min=cumsum_min,
-                    psf=psf_cta_south,
-                    num_slices=num_slices,
-                    time_per_slice=time_per_slice * u.s,
-                    bins=[bins_, bins_],
-                    )
-
-        slices = np.append(slices, slices_steady_source)
-        trans_scales = np.append(trans_scales, np.zeros(num_slices))
+        # slices_steady_source = simulate_steady_source(
+        #             A_eff=a_eff_cta_south,
+        #             N_background_cta=N_background_cta,
+        #             inv_F=inv_F,
+        #             cumsum_min=cumsum_min,
+        #             psf=psf_cta_south,
+        #             num_slices=num_slices,
+        #             time_per_slice=time_per_slice * u.s,
+        #             bins=[bins_, bins_],
+        #             )
+        #
+        # slices = np.append(slices, slices_steady_source)
+        # trans_scales = np.append(trans_scales, np.zeros(num_slices))
 
         '''
         Simulate slices with steady source and transient
@@ -249,24 +249,24 @@ def main(
         '''
         Simulate slices containing one steady source and no transient
         '''
-        slices_steady_source = simulate_steady_source(
-                    A_eff=a_eff_cta_south,
-                    N_background_cta=N_background_cta,
-                    inv_F=inv_F,
-                    cumsum_min=cumsum_min,
-                    psf=psf_cta_south,
-                    num_slices=num_slices,
-                    time_per_slice=time_per_slice * u.s,
-                    bins=[bins_, bins_],
-                    )
-        slices = np.append(slices, slices_steady_source)
-        trans_scales = np.append(trans_scales, np.zeros(num_slices))
+        # slices_steady_source = simulate_steady_source(
+        #             A_eff=a_eff_cta_south,
+        #             N_background_cta=N_background_cta,
+        #             inv_F=inv_F,
+        #             cumsum_min=cumsum_min,
+        #             psf=psf_cta_south,
+        #             num_slices=num_slices,
+        #             time_per_slice=time_per_slice * u.s,
+        #             bins=[bins_, bins_],
+        #             )
+        # slices = np.append(slices, slices_steady_source)
+        # trans_scales = np.append(trans_scales, np.zeros(num_slices))
 
     '''
     Write and save astropy tables for simulated cubes and transients.
     '''
-    list_cubes = slices.reshape([-1, 3*num_slices, bins_, bins_])
-    list_transients = trans_scales.reshape([-1, 3*num_slices])
+    list_cubes = slices.reshape([-1, num_slices, bins_, bins_])
+    list_transients = trans_scales.reshape([-1, num_slices])
     list_transient_positions = np.dstack((list_ra_transient, list_dec_transient))[0]
 
     cube_table = Table()
@@ -288,7 +288,7 @@ def main(
     cube_table['num_flare_slices'] = num_slices
 
     cube_table.meta['n_transient'] = n_transient
-    cube_table.meta['num_slices'] = 3*num_slices
+    cube_table.meta['num_slices'] = num_slices
     cube_table.meta['template'] = transient_template_filename
     cube_table.meta['time_per_slice'] = time_per_slice
     cube_table.meta['bins'] = bins_
@@ -308,7 +308,7 @@ def main(
     cube_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_cube.hdf5'.format(
                                                                     output_path,
                                                                     n_transient,
-                                                                    3*num_slices,
+                                                                    num_slices,
                                                                     time_per_slice,
                                                                     transient_template_filename,
                                                                     cu_min,
@@ -317,7 +317,7 @@ def main(
     trans_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_trans.hdf5'.format(
                                                                     output_path,
                                                                     n_transient,
-                                                                    3*num_slices,
+                                                                    num_slices,
                                                                     time_per_slice,
                                                                     transient_template_filename,
                                                                     cu_min,
