@@ -34,7 +34,7 @@ def simulate_steady_source_with_transient(
 
     flare_interp = np.interp(range(num_slices), np.linspace(0, num_slices, len(transient_template)), transient_template)
     transient_scale = (flare_interp/flare_interp.max() * N_transient_ebl*cu_flare).astype(int)
-    
+
     if pos_random == True:
         valid_transient_position = False
         while not valid_transient_position:
@@ -121,7 +121,7 @@ def simulate_steady_source_with_transient(
                 )[0]
         )
 
-    return np.array(slices), transient_scale, ra_transient, dec_transient
+    return np.array(slices), len(folded_events_transient), ra_transient, dec_transient
 
 
 def simulate_steady_source(
