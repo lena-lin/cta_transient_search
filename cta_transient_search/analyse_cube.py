@@ -74,29 +74,21 @@ def max_pixel_position(
     help='Minimal distance to sliding background window (number of slices). Will be enlarged by max. 3 slices if the number of slices for the resulting cube can not be divided by 4.',
     default=4
 )
+@click.option(
+    '--background',
+    '-b',
+    help='Boolean set True if background data without transient signal is analyzed',
+    is_flag=True
+)
 def main(
     input_file,
     output_path,
     n_wavelet_slices,
     n_bg_slices,
     gap,
+    background,
 ):
     cube_raw_table = Table.read(input_file, path='data')
-
-    try:
-        n_transient = cube_raw_table.meta['n_transient']
-    except:
-        n_transient = None
-
-    num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
-    time_per_slice = cube_raw_table.meta['time_per_slice']
-    cu_min = cube_raw_table.meta['min brightness in cu']
-    z_trans = cube_raw_table.meta['redshift']
-
-    try:
-        transient_template_filename = cube_raw_table.meta['template']
-    except:
-        transient_template_filename = None
 
     list_cubes_denoised = []
     list_trigger_position = []
@@ -115,28 +107,54 @@ def main(
     denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
     denoised_table.meta['gap'] = gap
 
-    denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_denoised.hdf5'.format(
-                                                                    output_path,
-                                                                    n_transient,
-                                                                    num_slices,
-                                                                    time_per_slice,
-                                                                    transient_template_filename,
-                                                                    cu_min,
-                                                                    z_trans
-                                                                ), path='data', overwrite=True)
-
     trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2),
                                 'trigger_pos': list_trigger_position})
-    trans_factor_table.meta = denoised_table.meta
-    trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_trigger.hdf5'.format(
-                                                                    output_path,
-                                                                    n_transient,
-                                                                    num_slices,
-                                                                    time_per_slice,
-                                                                    transient_template_filename,
-                                                                    cu_min,
-                                                                    z_trans
-                                                                ), path='data', overwrite=True)
+
+    if background:
+        num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
+        time_per_slice = cube_raw_table.meta['time_per_slice']
+        n_cubes = cube_raw_table.meta['n_cubes']
+        denoised_table.write('{}/n{}_s{}_t{}_bg_gradient_denoised.hdf5'.format(
+                                                                        output_path,
+                                                                        n_cubes,
+                                                                        num_slices,
+                                                                        time_per_slice,
+                                                                    ), path='data', overwrite=True)
+
+        trans_factor_table.meta = denoised_table.meta
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_gradient_trigger.hdf5'.format(
+                                                                        output_path,
+                                                                        n_cubes,
+                                                                        num_slices,
+                                                                        time_per_slice,
+                                                                    ), path='data', overwrite=True)
+    else:
+        num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
+        time_per_slice = cube_raw_table.meta['time_per_slice']
+        n_transient = cube_raw_table.meta['n_transient']
+        transient_template_filename = cube_raw_table.meta['template']
+        cu_min = cube_raw_table.meta['min brightness in cu']
+        z_trans = cube_raw_table.meta['redshift']
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_denoised.hdf5'.format(
+                                                                        output_path,
+                                                                        n_transient,
+                                                                        num_slices,
+                                                                        time_per_slice,
+                                                                        transient_template_filename,
+                                                                        cu_min,
+                                                                        z_trans
+                                                                    ), path='data', overwrite=True)
+
+        trans_factor_table.meta = denoised_table.meta
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_trigger.hdf5'.format(
+                                                                        output_path,
+                                                                        n_transient,
+                                                                        num_slices,
+                                                                        time_per_slice,
+                                                                        transient_template_filename,
+                                                                        cu_min,
+                                                                        z_trans
+                                                                    ), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
