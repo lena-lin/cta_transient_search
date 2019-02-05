@@ -95,7 +95,7 @@ def main(
     list_trigger_position = []
 
     if background == True:
-        cube = cube_raw_table['cube'].data.reshape(bins, bins, -1)
+        cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
         cube_denoised = gradient_benchmark(cube, bins)
         pos_trigger_pixel = max_pixel_position(cube_denoised)
