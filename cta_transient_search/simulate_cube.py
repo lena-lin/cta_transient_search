@@ -159,7 +159,7 @@ def main(
 
 
 # new Templates after fitting gaussian + exponential to data
-    simple, true_start_simple = simulate_Gaussians(10, 11, num_slices, time_per_slice)
+    simple, true_start_simple = simulate_Gaussians(16, 17, num_slices, time_per_slice)
     small, true_start_small = simulate_Gaussians(0.45, 2.18, num_slices, time_per_slice)
     exponential, true_start_exponential = simulate_Exponential(3, 6, 0, 2, num_slices, time_per_slice)
 
