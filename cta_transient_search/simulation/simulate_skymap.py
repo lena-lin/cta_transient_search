@@ -103,9 +103,11 @@ def simulate_steady_source_with_transient(
                                                     dec_transient,
                                                     ang_res_transinet,
                                                 )
+            num_transient_events.append(len(folded_events_transient))
 
         else:
             RA_tr, DEC_tr = [], []
+            num_transient_events.append(0)
 
         RA = np.concatenate([RA_bg, RA_tr, RA_crab])
         DEC = np.concatenate([DEC_bg, DEC_tr, DEC_crab])
@@ -122,7 +124,7 @@ def simulate_steady_source_with_transient(
                 )[0]
         )
 
-        num_transient_events.append(len(folded_events_transient))
+
 
     return np.array(slices), num_transient_events, ra_transient, dec_transient
 
