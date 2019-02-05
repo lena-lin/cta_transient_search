@@ -94,14 +94,16 @@ def main(
     list_cubes_denoised = []
     list_trigger_position = []
 
-    if background:
+    if background == True:
         cube = cube_raw_table['cube'].data.reshape(bins, bins, -1)
+        print('bg', cube.shape)
         cube_denoised = gradient_benchmark(cube, bins)
         pos_trigger_pixel = max_pixel_position(cube_denoised)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_denoised)
 
     else:
+        print('signal')
         for cube in tqdm(cube_raw_table['cube']):
             cube_denoised = gradient_benchmark(cube, bins)
             pos_trigger_pixel = max_pixel_position(cube_denoised)
