@@ -52,7 +52,7 @@ def simulate_Gaussians(sigma_range_min, sigma_range_max, Num_slices, time_per_sl
     time = Num_slices*time_per_slice
 
     '''
-    Rescale sigmas to given time & randomply drag a float sigma value
+    Rescale sigmas to given time & randomly drag a float sigma value
     '''
     sigma_range_min_time = sigma_range_min/(600)*time
     sigma_range_max_time = sigma_range_max/(600)*time
@@ -67,7 +67,8 @@ def simulate_Gaussians(sigma_range_min, sigma_range_max, Num_slices, time_per_sl
     mu_min = sigma_range_max_time+time_per_slice*2
     mu_max = Num_slices * time_per_slice - 2 * time_per_slice - sigma_range_max_time
 
-    mu = uniform(mu_min, mu_max)
+    # mu = uniform(mu_min, mu_max)
+    mu = (mu_max + mu_min) / 2
 
     '''
     Calculate #N_slices values, normal distributed around random mu and sigma

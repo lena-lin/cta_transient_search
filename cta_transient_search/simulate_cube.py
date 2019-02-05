@@ -159,7 +159,7 @@ def main(
 
 
 # new Templates after fitting gaussian + exponential to data
-    simple, true_start_simple = simulate_Gaussians(1.8348, 16.0364, num_slices, time_per_slice)
+    simple, true_start_simple = simulate_Gaussians(10, 11, num_slices, time_per_slice)
     small, true_start_small = simulate_Gaussians(0.45, 2.18, num_slices, time_per_slice)
     exponential, true_start_exponential = simulate_Exponential(3, 6, 0, 2, num_slices, time_per_slice)
 
@@ -277,7 +277,9 @@ def main(
     trans_table['template'] = list_templates
     trans_table['position'] = list_transient_positions
     # start slice for templates, dependent on template index + num_slices
-    trans_table['start_flare'] = np.asanyarray([transient_start_slices[template] for template in list_templates]) + num_slices  # add first empty cube, but not added in evaluation.py
+    trans_table['start_flare'] = np.asanyarray(
+                                    [transient_start_slices[template] for template in list_templates]
+                                ) + num_slices  # add first empty cube, but not added in evaluation.py
     # end slice arbitrary!! Not used so far
     trans_table['end_flare'] = 12 + num_slices
 
@@ -292,15 +294,35 @@ def main(
     cube_table.meta['bins'] = bins_
     cube_table.meta['fov'] = 8 * u.deg
     cube_table.meta['steady_source'] = 'Crab'
+    cube_table.meta['redshift'] = z_trans
 
     trans_table.meta['n_transient'] = n_transient
     trans_table.meta['num_slices'] = 3*num_slices
     trans_table.meta['template'] = transient_template_filename
     trans_table.meta['time_per_slice'] = time_per_slice
     trans_table.meta['bins'] = bins_
+    trans_table.meta['redshift'] = z_trans
+    trans_table.meta['min brightness in cu'] = cu_min
+    trans_table.meta['max brightness in cu'] = cu_max
 
-    cube_table.write('{}/n{}_s{}_t{}_i{}_cu{}_cube.hdf5'.format(output_path, n_transient, 3*num_slices, time_per_slice, transient_template_filename, cu_min), path='data', overwrite=True)
-    trans_table.write('{}/n{}_s{}_t{}_i{}_cu{}_trans.hdf5'.format(output_path, n_transient, 3*num_slices, time_per_slice, transient_template_filename, cu_min), path='data', overwrite=True)
+    cube_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_cube.hdf5'.format(
+                                                                    output_path,
+                                                                    n_transient,
+                                                                    3*num_slices,
+                                                                    time_per_slice,
+                                                                    transient_template_filename,
+                                                                    cu_min,
+                                                                    z_trans
+                                                                ), path='data', overwrite=True)
+    trans_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_trans.hdf5'.format(
+                                                                    output_path,
+                                                                    n_transient,
+                                                                    3*num_slices,
+                                                                    time_per_slice,
+                                                                    transient_template_filename,
+                                                                    cu_min,
+                                                                    z_trans
+                                                                ), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
