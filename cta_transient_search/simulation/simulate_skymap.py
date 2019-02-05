@@ -56,6 +56,7 @@ def simulate_steady_source_with_transient(
         theta = np.sqrt((crab_coord.ra.deg - ra_transient)**2 + (crab_coord.dec.deg - dec_transient)**2)
 
     slices = []
+    num_transient_events = []
     for i in range(num_slices):
         folded_events_crab = performance.response(
                                                 time_per_slice,
@@ -121,7 +122,9 @@ def simulate_steady_source_with_transient(
                 )[0]
         )
 
-    return np.array(slices), len(folded_events_transient), ra_transient, dec_transient
+        num_transient_events.append(len(folded_events_transient))
+
+    return np.array(slices), num_transient_events, ra_transient, dec_transient
 
 
 def simulate_steady_source(
