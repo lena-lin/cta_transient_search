@@ -295,15 +295,10 @@ def main(
     cube_table.meta['fov'] = 8 * u.deg
     cube_table.meta['steady_source'] = 'Crab'
     cube_table.meta['redshift'] = z_trans
+    cube_table.meta['min brightness in cu'] = cu_min
+    cube_table.meta['max brightness in cu'] = cu_max
 
-    trans_table.meta['n_transient'] = n_transient
-    trans_table.meta['num_slices'] = 3*num_slices
-    trans_table.meta['template'] = transient_template_filename
-    trans_table.meta['time_per_slice'] = time_per_slice
-    trans_table.meta['bins'] = bins_
-    trans_table.meta['redshift'] = z_trans
-    trans_table.meta['min brightness in cu'] = cu_min
-    trans_table.meta['max brightness in cu'] = cu_max
+    trans_table.meta = cube_table.meta
 
     cube_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_cube.hdf5'.format(
                                                                     output_path,

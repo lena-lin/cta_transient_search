@@ -125,19 +125,20 @@ def main(
     except:
         n_transient = None
 
-    num_slices = trans_factor_table.meta['num_slices']
-
     try:
-        transient_template_index = trans_factor_table.meta['template']
+        transient_template_filename = trans_factor_table.meta['template']
     except:
-        transient_template_index = None
+        transient_template_filename = None
 
     num_slices = trans_factor_table.meta['num_slices']
+    time_per_slice = trans_factor_table.meta['time_per_slice']
+    cu_min = trans_factor_table.meta['min brightness in cu']
+    z_trans = trans_factor_table.meta['redshift']
 
     alert_table = Table()
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
-    # alert_table['trans_factor_diff'] = denoised_table['trans_factor_diff']  # time trigger criterion
+    alert_table['trans_factor_diff'] = trans_factor_table['trans_factor_diff']  # time trigger criterion
 
     alert_table['pred_position_pixel'] = get_trigger_pixel(
                                          trans_factor_table,
@@ -154,7 +155,15 @@ def main(
 
     alert_table.meta = trans_factor_table.meta
     alert_table.meta['threshold'] = threshold
-    alert_table.write('{}/n{}_s{}_i{}_th{}_alert.hdf5'.format(output_path, n_transient, num_slices, transient_template_index, threshold), path='data', overwrite=True)
+    alert_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_alert.hdf5'.format(
+                                                                    output_path,
+                                                                    n_transient,
+                                                                    num_slices,
+                                                                    time_per_slice,
+                                                                    transient_template_filename,
+                                                                    cu_min,
+                                                                    z_trans
+                                                                ), path='data', overwrite=True)
 
 
 if __name__ == '__main__':

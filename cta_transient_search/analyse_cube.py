@@ -89,11 +89,14 @@ def main(
         n_transient = None
 
     num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
+    time_per_slice = cube_raw_table.meta['time_per_slice']
+    cu_min = cube_raw_table.meta['min brightness in cu']
+    z_trans = cube_raw_table.meta['redshift']
 
     try:
-        transient_template_index = cube_raw_table.meta['template']
+        transient_template_filename = cube_raw_table.meta['template']
     except:
-        transient_template_index = None
+        transient_template_filename = None
 
     list_cubes_denoised = []
     list_trigger_position = []
@@ -112,12 +115,28 @@ def main(
     denoised_table.meta['n_wavelet_slices'] = n_wavelet_slices
     denoised_table.meta['gap'] = gap
 
-    denoised_table.write('{}/n{}_s{}_t{}_gradient_denoised.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
+    denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_denoised.hdf5'.format(
+                                                                    output_path,
+                                                                    n_transient,
+                                                                    num_slices,
+                                                                    time_per_slice,
+                                                                    transient_template_filename,
+                                                                    cu_min,
+                                                                    z_trans
+                                                                ), path='data', overwrite=True)
 
     trans_factor_table = Table({'trans_factor': denoised_table['cube_smoothed'].max(axis=2).max(axis=2),
                                 'trigger_pos': list_trigger_position})
     trans_factor_table.meta = denoised_table.meta
-    trans_factor_table.write('{}/n{}_s{}_t{}_gradient_trigger.hdf5'.format(output_path, n_transient, num_slices, transient_template_index), path='data', overwrite=True)
+    trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_trigger.hdf5'.format(
+                                                                    output_path,
+                                                                    n_transient,
+                                                                    num_slices,
+                                                                    time_per_slice,
+                                                                    transient_template_filename,
+                                                                    cu_min,
+                                                                    z_trans
+                                                                ), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
