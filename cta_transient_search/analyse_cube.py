@@ -32,9 +32,9 @@ def wavelet_denoising_cube(
 
 
 def gradient_benchmark(
-    cube_raw
+    cube_raw,
+    bins
 ):
-    bins = cube_raw.shape[1]
     grad = np.diff(cube_raw, axis=0)
     return np.vstack((np.zeros((1, bins, bins)), grad))
 
@@ -96,14 +96,14 @@ def main(
 
     if background:
         cube = cube_raw_table['cube'].data.reshape(bins, bins, -1)
-        cube_denoised = gradient_benchmark(cube)
+        cube_denoised = gradient_benchmark(cube, bins)
         pos_trigger_pixel = max_pixel_position(cube_denoised)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_denoised)
 
     else:
         for cube in tqdm(cube_raw_table['cube']):
-            cube_denoised = gradient_benchmark(cube)
+            cube_denoised = gradient_benchmark(cube, bins)
             pos_trigger_pixel = max_pixel_position(cube_denoised)
 
             list_trigger_position.append(pos_trigger_pixel)
