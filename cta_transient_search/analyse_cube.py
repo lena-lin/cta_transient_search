@@ -89,15 +89,25 @@ def main(
     background,
 ):
     cube_raw_table = Table.read(input_file, path='data')
+    bins = cube_raw_table.meta['bins']
 
     list_cubes_denoised = []
     list_trigger_position = []
-    for cube in tqdm(cube_raw_table['cube']):
+
+    if background:
+        cube = cube_raw_table['cube'].data.reshape(bins, bins, -1)
         cube_denoised = gradient_benchmark(cube)
         pos_trigger_pixel = max_pixel_position(cube_denoised)
-
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_denoised)
+
+    else:
+        for cube in tqdm(cube_raw_table['cube']):
+            cube_denoised = gradient_benchmark(cube)
+            pos_trigger_pixel = max_pixel_position(cube_denoised)
+
+            list_trigger_position.append(pos_trigger_pixel)
+            list_cubes_denoised.append(cube_denoised)
 
     denoised_table = Table()
     denoised_table['cube_smoothed'] = list_cubes_denoised
