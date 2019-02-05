@@ -146,7 +146,7 @@ def main(
                                                                     ) for p in alert_table['pred_position_pixel']
                                             ]
 
-    if background:
+    if background == True:
         num_slices = trans_factor_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = trans_factor_table.meta['time_per_slice']
         n_cubes = trans_factor_table.meta['n_cubes']
