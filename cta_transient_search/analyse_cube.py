@@ -98,7 +98,7 @@ def main(
     if background == True:
         cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
-        cube_denoised = gradient_benchmark(cube, bins)
+        cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins, n_wavelet_slices)
         pos_trigger_pixel = max_pixel_position(cube_denoised)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_denoised)
@@ -106,7 +106,7 @@ def main(
     else:
         print('signal')
         for cube in tqdm(cube_raw_table['cube']):
-            cube_denoised = gradient_benchmark(cube, bins)
+            cube_denoised = wavelet_denoising_cube(cube, n_bg_slices, gap, bins, n_wavelet_slices)
             pos_trigger_pixel = max_pixel_position(cube_denoised)
 
             list_trigger_position.append(pos_trigger_pixel)
