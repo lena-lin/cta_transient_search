@@ -108,10 +108,17 @@ def get_position_from_pixel(pixel, bins, fov):
     help='Trigger threshold, default=6',
     default=3.5
 )
+@click.option(
+    '--background',
+    '-b',
+    help='Boolean set True if background data without transient signal is analyzed',
+    is_flag=True
+)
 def main(
     input_file,  # ! .trigger nicht denoised table
     output_path,
-    threshold
+    threshold,
+    background
 ):
     # table_den = Table.read(input_file, path='data')
     # trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
@@ -120,22 +127,8 @@ def main(
     trans_factor_table = get_smoothed_table(trans_factor_table)
     trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor_diff'], threshold)
 
-    try:
-        n_transient = trans_factor_table.meta['n_transient']
-    except:
-        n_transient = None
-
-    try:
-        transient_template_filename = trans_factor_table.meta['template']
-    except:
-        transient_template_filename = None
-
-    num_slices = trans_factor_table.meta['num_slices']
-    time_per_slice = trans_factor_table.meta['time_per_slice']
-    cu_min = trans_factor_table.meta['min brightness in cu']
-    z_trans = trans_factor_table.meta['redshift']
-
     alert_table = Table()
+    alert_table.meta = trans_factor_table.meta
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
     alert_table['trans_factor_diff'] = trans_factor_table['trans_factor_diff']  # time trigger criterion
@@ -153,17 +146,33 @@ def main(
                                                                     ) for p in alert_table['pred_position_pixel']
                                             ]
 
-    alert_table.meta = trans_factor_table.meta
-    alert_table.meta['threshold'] = threshold
-    alert_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_alert.hdf5'.format(
-                                                                    output_path,
-                                                                    n_transient,
-                                                                    num_slices,
-                                                                    time_per_slice,
-                                                                    transient_template_filename,
-                                                                    cu_min,
-                                                                    z_trans
-                                                                ), path='data', overwrite=True)
+    if background:
+        num_slices = trans_factor_table.meta['num_slices']  # in simulate_cube: 3*n_slices
+        time_per_slice = trans_factor_table.meta['time_per_slice']
+        n_cubes = trans_factor_table.meta['n_cubes']
+        alert_table.write('{}/n{}_s{}_t{}_bg_alert.hdf5'.format(
+                                                                output_path,
+                                                                n_cubes,
+                                                                num_slices,
+                                                                time_per_slice,
+                                                            ), path='data', overwrite=True)
+
+    else:
+        num_slices = trans_factor_table.meta['num_slices']  # in simulate_cube: 3*n_slices
+        time_per_slice = trans_factor_table.meta['time_per_slice']
+        n_transient = trans_factor_table.meta['n_transient']
+        transient_template_filename = trans_factor_table.meta['template']
+        cu_min = trans_factor_table.meta['min brightness in cu']
+        z_trans = trans_factor_table.meta['redshift']
+        alert_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_alert.hdf5'.format(
+                                                                        output_path,
+                                                                        n_transient,
+                                                                        num_slices,
+                                                                        time_per_slice,
+                                                                        transient_template_filename,
+                                                                        cu_min,
+                                                                        z_trans
+                                                                    ), path='data', overwrite=True)
 
 
 if __name__ == '__main__':
