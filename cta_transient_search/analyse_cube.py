@@ -36,7 +36,8 @@ def gradient_benchmark(
     bins
 ):
     grad = np.diff(cube_raw, axis=0)
-    return np.vstack((np.zeros((1, bins, bins)), grad))
+    # return np.vstack((np.zeros((1, bins, bins)), grad))
+    return grad
 
 
 def max_pixel_position(
