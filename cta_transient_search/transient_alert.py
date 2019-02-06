@@ -13,9 +13,8 @@ import astropy.units as u
 
 
 def moving_average(timeseries, interval_size=10):
-
     averages = np.convolve(timeseries, np.full(interval_size, 1 / interval_size), mode='valid')
-    return averages
+    return np.hstack([np.full(interval_size, np.nan), averages[:-1])
 
 
 def get_smoothed_table(table):
