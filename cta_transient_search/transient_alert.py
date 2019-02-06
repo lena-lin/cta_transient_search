@@ -14,7 +14,7 @@ import astropy.units as u
 
 def moving_average(timeseries, interval_size=10):
 
-    np.convolve(timeseries, kernel=np.full(interval_size, 1 / interval_size), mode='valid')
+    averages = np.convolve(timeseries, np.full(interval_size, 1 / interval_size), mode='valid')
     return averages
 
 
