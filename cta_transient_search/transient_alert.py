@@ -13,11 +13,8 @@ import astropy.units as u
 
 
 def moving_average(timeseries, interval_size=10):
-    list_averages = np.zeros(interval_size+1).tolist()
-    for i in range(interval_size+1, len(timeseries)):
-        list_averages.append(timeseries[i-interval_size:i].mean())
-    averages = np.asarray(list_averages)
 
+    np.convolve(timeseries, kernel=np.full(interval_size, 1 / interval_size), mode='valid')
     return averages
 
 
@@ -120,12 +117,10 @@ def main(
     threshold,
     background
 ):
-    # table_den = Table.read(input_file, path='data')
-    # trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
-    # trans_factor_table.meta = table_den.meta
+
     trans_factor_table = Table.read(input_file, path='data')
-    trans_factor_table = get_smoothed_table(trans_factor_table)
-    trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor_diff'], threshold)
+    # trans_factor_table = get_smoothed_table(trans_factor_table)
+    trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor'], threshold)
 
     alert_table = Table()
     alert_table.meta = trans_factor_table.meta
