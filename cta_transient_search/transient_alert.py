@@ -119,14 +119,14 @@ def main(
 ):
 
     trans_factor_table = Table.read(input_file, path='data')
-    # trans_factor_table = get_smoothed_table(trans_factor_table)
+    trans_factor_table = get_smoothed_table(trans_factor_table)
     trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor'], threshold)
 
     alert_table = Table()
     alert_table.meta = trans_factor_table.meta
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
-    # alert_table['trans_factor_diff'] = trans_factor_table['trans_factor_diff']  # time trigger criterion
+    alert_table['trans_factor_diff'] = trans_factor_table['trans_factor_diff']  # time trigger criterion
     alert_table['trans_factor'] = trans_factor_table['trans_factor']  # time trigger criterion
 
     alert_table['pred_position_pixel'] = get_trigger_pixel(
@@ -146,7 +146,7 @@ def main(
         num_slices = trans_factor_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = trans_factor_table.meta['time_per_slice']
         n_cubes = trans_factor_table.meta['n_cubes']
-        alert_table.write('{}/n{}_s{}_t{}_bg_gradient_alert.hdf5'.format(
+        alert_table.write('{}/n{}_s{}_t{}_bg_rmWavelet_alert.hdf5'.format(
                                                                 output_path,
                                                                 n_cubes,
                                                                 num_slices,
@@ -160,7 +160,7 @@ def main(
         transient_template_filename = trans_factor_table.meta['template']
         cu_min = trans_factor_table.meta['min brightness in cu']
         z_trans = trans_factor_table.meta['redshift']
-        alert_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_alert.hdf5'.format(
+        alert_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_rmWavelet_alert.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
