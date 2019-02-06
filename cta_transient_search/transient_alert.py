@@ -131,7 +131,8 @@ def main(
     alert_table.meta = trans_factor_table.meta
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
-    # alert_table['trans_factor_diff'] = trans_factor_table['trans_factor_diff']  # time trigger criterion
+    alert_table['trans_factor_diff'] = trans_factor_table['trans_factor_diff']  # time trigger criterion
+    alert_table['trans_factor'] = trans_factor_table['trans_factor']
 
     alert_table['pred_position_pixel'] = get_trigger_pixel(
                                          trans_factor_table,
