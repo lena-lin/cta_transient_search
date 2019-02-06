@@ -127,7 +127,7 @@ def main(
         num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = cube_raw_table.meta['time_per_slice']
         n_cubes = cube_raw_table.meta['n_cubes']
-        denoised_table.write('{}/n{}_s{}_t{}_bg_gradient_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_bg_rmWavelet_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -135,7 +135,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_gradient_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_rmWavelet_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -148,7 +148,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_rmWavelet_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -159,7 +159,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_gradient_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_rmWavelet_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
