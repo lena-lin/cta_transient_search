@@ -31,6 +31,54 @@ def wavelet_denoising_cube(
     return np.asarray(cube_denoised)
 
 
+def li_ma_significance(n_on, n_off, alpha=0.2):
+    '''
+    Calculate the Li&Ma significance for given
+    observations data
+    Parameters
+    ----------
+    n_on: integer or array like
+        Number of events for the on observations
+    n_off: integer of array like
+        Number of events for the off observations
+    alpha: float
+        Scaling factor for the off observations, for wobble observations
+        this is 1 / number of off regions
+    '''
+
+    scalar = np.isscalar(n_on)
+
+    n_on = np.array(n_on, copy=False, ndmin=1)
+    n_off = np.array(n_off, copy=False, ndmin=1)
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+        p_on = n_on / (n_on + n_off)
+        p_off = n_off / (n_on + n_off)
+
+        t1 = n_on * np.log(((1 + alpha) / alpha) * p_on)
+        t2 = n_off * np.log((1 + alpha) * p_off)
+
+        ts = (t1 + t2)
+        significance = np.sqrt(ts * 2)
+
+    significance[np.isnan(significance)] = 0
+    significance[n_on < alpha * n_off] = 0
+
+    if scalar:
+        return significance[0]
+
+    return significance
+
+
+def li_ma_benchmark(cube_raw, n_slices_off, gap):
+    alpha = 1 / n_slices_off
+    slices = []
+    for i in range(len(cube_raw) - gap - n_slices_off):
+        n_off = cube_raw[i:i + n_slices_off].sum(axis=0)
+        n_on = cube_raw[i + n_slices_off + gap]
+        slices.append(li_ma_significance(n_on, n_off, alpha=alpha))
+
+
 def gradient_benchmark(
     cube_raw,
     bins
@@ -98,19 +146,19 @@ def main(
     if background == True:
         cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
-        cube_denoised = remove_steady_background(cube, n_bg_slices, gap)
-        pos_trigger_pixel = max_pixel_position(cube_denoised)
+        cube_S = li_ma_benchmark(cube, 5, 3)
+        pos_trigger_pixel = max_pixel_position(cube_S)
         list_trigger_position.append(pos_trigger_pixel)
-        list_cubes_denoised.append(cube_denoised)
+        list_cubes_denoised.append(cube_S)
 
     else:
         print('signal')
         for cube in tqdm(cube_raw_table['cube']):
-            cube_denoised = remove_steady_background(cube, n_bg_slices, gap)
-            pos_trigger_pixel = max_pixel_position(cube_denoised)
+            cube_S = li_ma_benchmark(cube, 5, 3)
+            pos_trigger_pixel = max_pixel_position(cube_S)
 
             list_trigger_position.append(pos_trigger_pixel)
-            list_cubes_denoised.append(cube_denoised)
+            list_cubes_denoised.append(cube_S)
 
     denoised_table = Table()
     denoised_table['cube_smoothed'] = list_cubes_denoised
@@ -127,7 +175,7 @@ def main(
         num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = cube_raw_table.meta['time_per_slice']
         n_cubes = cube_raw_table.meta['n_cubes']
-        denoised_table.write('{}/n{}_s{}_t{}_bg_rmWavelet_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_bg_lima_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -135,7 +183,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_rmWavelet_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -148,7 +196,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_rmWavelet_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_lima_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -159,7 +207,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_rmWavelet_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
