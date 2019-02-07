@@ -78,6 +78,8 @@ def li_ma_benchmark(cube_raw, n_slices_off, gap):
         n_on = cube_raw[i + n_slices_off + gap]
         slices.append(li_ma_significance(n_on, n_off, alpha=alpha))
 
+    return slices
+
 
 def gradient_benchmark(
     cube_raw,
