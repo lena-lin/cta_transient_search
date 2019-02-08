@@ -19,7 +19,7 @@ def wavelet_denoise_lima(cube, n_slices_off, gap):
             start_level=0
         )
         ct = thresholding(coeffs)
-        slice_denoised = pywt.iswt2(coeffs=ct, wavelet='bior1.3')[-1]
+        slice_denoised = pywt.iswt2(coeffs=ct, wavelet='bior1.3')
         queue_denoised.append(slice_denoised)
 
         if len(queue_denoised) == n_slices_off + gap + 1:
