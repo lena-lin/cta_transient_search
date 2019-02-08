@@ -3,7 +3,33 @@ import click
 import numpy as np
 from tqdm import tqdm
 from astropy.table import Table
-from ctawave.denoise import thresholding_3d, remove_steady_background
+from ctawave.denoise import thresholding_3d, thresholding, remove_steady_background
+from collections import deque
+
+
+def wavelet_denoise_lima(cube, n_slices_off, gap):
+    alpha = 1 / n_slices_off
+    queue_denoised = deque([])
+    cube_liMa_S = []
+    for slice_raw in cube:
+        coeffs = pywt.swt2(
+            data=slice_raw,
+            wavelet='bior1.3',
+            level=2,
+            start_level=0
+        )
+        ct = thresholding(coeffs)
+        slice_denoised = pywt.iswt2(coeffs=ct, wavelet='bior1.3')[-1]
+        queue_denoised.append(slice_denoised)
+
+        if len(queue_denoised) == n_slices_off + gap + 1:
+            n_off = queue_denoised[:n_slices_off].sum(axis=0)
+            n_on = slice_denoised
+            cube_liMa_S.append(li_ma_significance(n_on, n_off, alpha=alpha))
+
+            queue_denoised.popleft()
+
+    return cube_liMa_S
 
 
 def wavelet_denoising_cube(
