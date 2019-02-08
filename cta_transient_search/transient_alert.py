@@ -13,12 +13,8 @@ import astropy.units as u
 
 
 def moving_average(timeseries, interval_size=10):
-    list_averages = np.zeros(interval_size+1).tolist()
-    for i in range(interval_size+1, len(timeseries)):
-        list_averages.append(timeseries[i-interval_size:i].mean())
-    averages = np.asarray(list_averages)
-
-    return averages
+    averages = np.convolve(timeseries, np.full(interval_size, 1 / interval_size), mode='valid')
+    return np.hstack([np.full(interval_size, np.nan), averages[:-1]])
 
 
 def get_smoothed_table(table):
@@ -120,18 +116,17 @@ def main(
     threshold,
     background
 ):
-    # table_den = Table.read(input_file, path='data')
-    # trans_factor_table = Table({'trans_factor': table_den['cube_smoothed'].max(axis=2).max(axis=2)})
-    # trans_factor_table.meta = table_den.meta
+
     trans_factor_table = Table.read(input_file, path='data')
     trans_factor_table = get_smoothed_table(trans_factor_table)
-    trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor_diff'], threshold)
+    trigger_index, found_trigger = send_alert(trans_factor_table['trans_factor'], threshold)
 
     alert_table = Table()
     alert_table.meta = trans_factor_table.meta
     alert_table['trigger_index'] = trigger_index  # list of bools (len=number slices), true for trigger, false for no trigger
     alert_table['found_trigger'] = found_trigger  # number of triggers found in series (aka number of true in trigger index)
     alert_table['trans_factor_diff'] = trans_factor_table['trans_factor_diff']  # time trigger criterion
+    alert_table['trans_factor'] = trans_factor_table['trans_factor']  # time trigger criterion
 
     alert_table['pred_position_pixel'] = get_trigger_pixel(
                                          trans_factor_table,
@@ -150,7 +145,7 @@ def main(
         num_slices = trans_factor_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = trans_factor_table.meta['time_per_slice']
         n_cubes = trans_factor_table.meta['n_cubes']
-        alert_table.write('{}/n{}_s{}_t{}_bg_alert.hdf5'.format(
+        alert_table.write('{}/n{}_s{}_t{}_bg_wavelet_lima_alert.hdf5'.format(
                                                                 output_path,
                                                                 n_cubes,
                                                                 num_slices,
@@ -164,7 +159,7 @@ def main(
         transient_template_filename = trans_factor_table.meta['template']
         cu_min = trans_factor_table.meta['min brightness in cu']
         z_trans = trans_factor_table.meta['redshift']
-        alert_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_alert.hdf5'.format(
+        alert_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_wavelet_lima_alert.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
