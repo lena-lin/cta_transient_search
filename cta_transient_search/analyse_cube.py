@@ -211,7 +211,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_lima_wavelet_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_wavelet_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
