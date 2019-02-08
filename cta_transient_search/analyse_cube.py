@@ -224,7 +224,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_wavelet_lima_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -235,7 +235,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_wavelet_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
