@@ -36,7 +36,7 @@ def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
 
         queue_denoised.append(slice_denoised)
 
-        if len(queue_denoised) == n_slices_off + gap + 1:
+        if len(queue_denoised) > (n_slices_off + gap):
             n_off = np.array(queue_denoised)[:n_slices_off].sum(axis=0)
             n_on = slice_denoised
             cube_liMa_S.append(li_ma_significance(n_on, n_off, alpha=alpha))
