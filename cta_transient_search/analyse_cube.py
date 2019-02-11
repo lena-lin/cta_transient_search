@@ -23,9 +23,9 @@ def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
         queue_denoised.append(s)
 
     cube_liMa_S = []
-    for i in range(n_slices_wavelet, len(cube)):
+    for i in range(n_slices_wavelet + 1, len(cube)):
         coeffs = pywt.swtn(
-                        data=cube[i - n_slices_wavelet + 1:i],
+                        data=cube[i - n_slices_wavelet:i],
                         wavelet='bior1.3',
                         level=2,
                         start_level=0
@@ -213,7 +213,7 @@ def main(
     if background == True:
         cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
-        cube_S = wavelet3d_denoise_lima(cube, 8, 5, 3)
+        cube_S = wavelet3d_denoise_lima(cube, 12, 5, 3)
         pos_trigger_pixel = max_pixel_position(cube_S)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_S)
@@ -221,7 +221,7 @@ def main(
     else:
         print('signal')
         for cube in tqdm(cube_raw_table['cube']):
-            cube_S = wavelet3d_denoise_lima(cube, 8, 5, 3)
+            cube_S = wavelet3d_denoise_lima(cube, 12, 5, 3)
             pos_trigger_pixel = max_pixel_position(cube_S)
 
             list_trigger_position.append(pos_trigger_pixel)
