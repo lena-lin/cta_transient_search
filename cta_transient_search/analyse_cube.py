@@ -7,7 +7,46 @@ from ctawave.denoise import thresholding_3d, thresholding, remove_steady_backgro
 from collections import deque
 
 
-def wavelet_denoise_lima(cube, n_slices_off, gap):
+def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
+    alpha = 1 / n_slices_off
+    queue_denoised = deque([])
+    coeffs_start = pywt.swtn(
+                    data=cube[:n_slices_wavelet],
+                    wavelet='bior1.3',
+                    level=2,
+                    start_level=0
+                )
+
+    ct = thresholding_3d(coeffs_start, k=30)
+    start_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
+    for s in start_denoised:
+        queue_denoised.append(s)
+
+    cube_liMa_S = []
+    for i in range(n_slices_wavelet, len(cube)):
+        coeffs = pywt.swtn(
+                        data=cube[i - n_slices_wavelet + 1:i],
+                        wavelet='bior1.3',
+                        level=2,
+                        start_level=0
+                    )
+
+        ct = thresholding_3d(coeffs, k=30)
+        slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
+
+        queue_denoised.append(slice_denoised)
+
+        if len(queue_denoised) == n_slices_off + gap + 1:
+            n_off = np.array(queue_denoised)[:n_slices_off].sum(axis=0)
+            n_on = slice_denoised
+            cube_liMa_S.append(li_ma_significance(n_on, n_off, alpha=alpha))
+
+            queue_denoised.popleft()
+
+    return cube_liMa_S
+
+
+def wavelet2d_denoise_lima(cube, n_slices_off, gap):
     alpha = 1 / n_slices_off
     queue_denoised = deque([])
     cube_liMa_S = []
