@@ -227,6 +227,8 @@ def main(
             list_trigger_position.append(pos_trigger_pixel)
             list_cubes_denoised.append(cube_S)
 
+    from IPython import embed; embed()
+
     denoised_table = Table()
     denoised_table['cube_smoothed'] = list_cubes_denoised
 
