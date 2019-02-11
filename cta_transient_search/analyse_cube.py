@@ -23,9 +23,9 @@ def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
         queue_denoised.append(s)
 
     cube_liMa_S = []
-    for i in range(n_slices_wavelet + 1, len(cube)):
+    for i in range(n_slices_wavelet, len(cube)):
         coeffs = pywt.swtn(
-                        data=cube[i - n_slices_wavelet:i],
+                        data=cube[i - n_slices_wavelet + 1:i + 1],
                         wavelet='bior1.3',
                         level=2,
                         start_level=0
