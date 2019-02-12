@@ -59,7 +59,7 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
                     start_level=0
                 )
 
-    ct = thresholding_3d(coeffs_start, k=30)
+    ct = thresholding_3d(coeffs_start, k=1)
     start_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
     for s in start_denoised:
         queue_denoised.append(s)
@@ -83,7 +83,7 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
                         start_level=0
                     )
 
-        ct = thresholding_3d(coeffs, k=30)
+        ct = thresholding_3d(coeffs, k=1)
         slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
 
         queue_denoised.append(slice_denoised)
