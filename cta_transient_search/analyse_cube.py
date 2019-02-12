@@ -59,7 +59,7 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
                     start_level=0
                 )
 
-    ct = thresholding_3d(coeffs_start, k=1)
+    ct = thresholding_3d(coeffs_start, k=30)
     start_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
     for s in start_denoised:
         queue_denoised.append(s)
@@ -69,7 +69,7 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
     for i in range(current_slice, len(cube)):
         queue_bg_sub.append(
                             background_substraction(
-                                                    cube[(current_slice - size_bg_cube + 1):(current_slice + 1)],
+                                                    cube[(i - size_bg_cube + 1):(i + 1)],
                                                     n_slices_bg,
                                                     gap_bg
                                                     )
@@ -83,16 +83,17 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
                         start_level=0
                     )
 
-        ct = thresholding_3d(coeffs, k=1)
+        ct = thresholding_3d(coeffs, k=30)
         slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
 
         queue_denoised.append(slice_denoised)
+        print(slice_denoised[40, 40])
 
         if len(queue_denoised) > (n_slices_off + gap):
+            print(len(queue_denoised))
             n_off = np.array(queue_denoised)[:n_slices_off].sum(axis=0)
             n_on = slice_denoised
             cube_liMa_S.append(li_ma_significance(n_on, n_off, alpha=alpha))
-
             queue_denoised.popleft()
 
     return cube_liMa_S
