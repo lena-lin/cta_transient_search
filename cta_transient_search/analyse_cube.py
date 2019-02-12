@@ -87,10 +87,8 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
         slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
 
         queue_denoised.append(slice_denoised)
-        print(slice_denoised[40, 40])
 
         if len(queue_denoised) > (n_slices_off + gap):
-            print(len(queue_denoised))
             n_off = np.array(queue_denoised)[:n_slices_off].sum(axis=0)
             n_on = slice_denoised
             cube_liMa_S.append(li_ma_significance(n_on, n_off, alpha=alpha))
