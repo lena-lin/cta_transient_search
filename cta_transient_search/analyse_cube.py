@@ -45,7 +45,7 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
         print('len Q: {}, current_slice: {}'.format(len(queue_bg_sub), current_slice))
         queue_bg_sub.append(
                             background_substraction(
-                                                    cube[(current_slice - size_bg_cube):(current_slice + 1)],
+                                                    cube[(current_slice - (size_bg_cube + 1)):(current_slice + 1)],
                                                     n_slices_bg,
                                                     gap_bg
                                                     )
