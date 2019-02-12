@@ -299,7 +299,7 @@ def main(
     if background == True:
         cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
-        cube_S = wavelet3d_denoise_lima(cube, 8, 5, 3)
+        cube_S = bgSubs_wavelet3d_denoise_lima(cube, 8, 5, 3, 3, 3)
         pos_trigger_pixel = max_pixel_position(cube_S)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_S)
@@ -307,7 +307,7 @@ def main(
     else:
         print('signal')
         for cube in tqdm(cube_raw_table['cube']):
-            cube_S = wavelet3d_denoise_lima(cube, 8, 5, 3)
+            cube_S = bgSubs_wavelet3d_denoise_lima(cube, 8, 5, 3, 3, 3)
             pos_trigger_pixel = max_pixel_position(cube_S)
 
             list_trigger_position.append(pos_trigger_pixel)
