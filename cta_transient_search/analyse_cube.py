@@ -20,10 +20,10 @@ def background_start(cube, n_slices_bg, gap_bg):
     else:
         slices_bg = []
         for i in range(1, n_slices_bg + 1):
-            print('n_slices_bg: {}'.format(i))
+            # print('n_slices_bg: {}'.format(i))
             slices_bg.append(background_substraction(cube[:i + 1], n_slices_bg=i, gap_bg=0))
         for k in range(1, gap_bg):
-            print('n_slices_bg: {}'.format(k))
+            # print('n_slices_bg: {}'.format(k))
             slices_bg.append(background_substraction(cube[:n_slices_bg + k + 1], n_slices_bg, gap_bg=k))
 
         return slices_bg
@@ -34,15 +34,15 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
     size_bg_cube = n_slices_bg + gap_bg + 1
     queue_bg_sub = deque([])
     queue_denoised = deque([])
-    print('Start')
+    # print('Start')
     slices_bg_start = background_start(cube[:n_slices_bg + gap_bg], n_slices_bg, gap_bg)
-    print('len start: {}'.format(len(slices_bg_start)))
+    # print('len start: {}'.format(len(slices_bg_start)))
     for s in slices_bg_start:
         queue_bg_sub.append(s)
 
     current_slice = n_slices_bg + gap_bg
     while(len(queue_bg_sub) < n_slices_wavelet):
-        print('len Q: {}, current_slice: {}'.format(len(queue_bg_sub), current_slice))
+        # print('len Q: {}, current_slice: {}'.format(len(queue_bg_sub), current_slice))
         queue_bg_sub.append(
                             background_substraction(
                                                     cube[(current_slice - size_bg_cube + 1):(current_slice + 1)],
@@ -63,10 +63,10 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
     start_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
     for s in start_denoised:
         queue_denoised.append(s)
-    print('cube_start finished')
+    # print('cube_start finished')
 
     cube_liMa_S = []
-    for i in tqdm(range(current_slice, len(cube))):
+    for i in range(current_slice, len(cube)):
         queue_bg_sub.append(
                             background_substraction(
                                                     cube[(current_slice - size_bg_cube + 1):(current_slice + 1)],
