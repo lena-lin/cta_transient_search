@@ -7,6 +7,92 @@ from ctawave.denoise import thresholding_3d, thresholding, remove_steady_backgro
 from collections import deque
 
 
+def background_substraction(cube, n_slices_bg, gap_bg):
+    if len(cube) != (n_slices_bg + gap_bg + 1):
+        print('Invalid cube length for background substraction.')
+    else:
+        return cube[n_slices_bg + gap_bg] - cube[:n_slices_bg].mean(axis=0)
+
+
+def background_start(cube, n_slices_bg, gap_bg):
+    if len(cube) != (n_slices_bg + gap_bg):
+        print('Invalid cube length.')
+    else:
+        slices_bg = []
+        for i in range(1, n_slices_bg + 1):
+            slices_bg.append(background_substraction(cube[:i + 1], n_slices_bg=i, gap_bg=0))
+        for i in range(1, gap_bg + 1):
+            slices_bg.append(background_substraction(cube[:n_slices_bg + i + 1], n_slices_bg, gap_bg=i))
+
+        return slices_bg
+
+
+def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_slices_bg, gap_bg):
+    alpha = 1 / n_slices_off
+    size_bg_cube = n_slices_bg + gap_bg + 1
+    queue_bg_sub = deque([])
+    queue_denoised = deque([])
+    slices_bg_start = background_start(cube[:n_slices_bg + gap_bg], n_slices_bg, gap_bg)
+    for s in slices_bg_start:
+        queue_bg_sub.append(s)
+
+    current_slice = n_slices_bg + gap_bg
+    while(len(queue_bg_sub) < n_slices_wavelet):
+        queue_bg_sub.append(
+                            background_substraction(
+                                                    cube[(current_slice - size_bg_cube):(current_slice + 1)],
+                                                    n_slices_bg,
+                                                    gap_bg
+                                                    )
+                            )
+        current_slice += 1
+
+    coeffs_start = pywt.swtn(
+                    data=np.array(queue_bg_sub),
+                    wavelet='bior1.3',
+                    level=2,
+                    start_level=0
+                )
+
+    ct = thresholding_3d(coeffs_start, k=30)
+    start_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
+    for s in start_denoised:
+        queue_denoised.append(s)
+    print('cube_start finished')
+
+    cube_liMa_S = []
+    for i in tqdm(range(current_slice, len(cube))):
+        queue_bg_sub.append(
+                            background_substraction(
+                                                    cube[(current_slice - size_bg_cube):(current_slice + 1)],
+                                                    n_slices_bg,
+                                                    gap_bg
+                                                    )
+                            )
+        queue_bg_sub.popleft()
+
+        coeffs = pywt.swtn(
+                        data=np.array(queue_bg_sub),
+                        wavelet='bior1.3',
+                        level=2,
+                        start_level=0
+                    )
+
+        ct = thresholding_3d(coeffs, k=30)
+        slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
+
+        queue_denoised.append(slice_denoised)
+
+        if len(queue_denoised) > (n_slices_off + gap):
+            n_off = np.array(queue_denoised)[:n_slices_off].sum(axis=0)
+            n_on = slice_denoised
+            cube_liMa_S.append(li_ma_significance(n_on, n_off, alpha=alpha))
+
+            queue_denoised.popleft()
+
+    return cube_liMa_S
+
+
 def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
     alpha = 1 / n_slices_off
     queue_denoised = deque([])
@@ -244,7 +330,7 @@ def main(
         num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = cube_raw_table.meta['time_per_slice']
         n_cubes = cube_raw_table.meta['n_cubes']
-        denoised_table.write('{}/n{}_s{}_t{}_bg_3dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_bg_bgSubs_3dwavelet_lima_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -252,7 +338,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_3dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_bgSubs_3dwavelet_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -265,7 +351,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_3dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_bgSubs_3dwavelet_lima_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -276,7 +362,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_3dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_bgSubs_3dwavelet_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
