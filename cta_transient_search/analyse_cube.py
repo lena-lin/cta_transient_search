@@ -9,7 +9,7 @@ from collections import deque
 
 def background_substraction(cube, n_slices_bg, gap_bg):
     if len(cube) != (n_slices_bg + gap_bg + 1):
-        print('Invalid cube length for background substraction.')
+        print('Invalid cube length of {} for background substraction. Should be {}.'.format(len(cube), (n_slices_bg + gap_bg + 1)))
     else:
         return cube[n_slices_bg + gap_bg] - cube[:n_slices_bg].mean(axis=0)
 
