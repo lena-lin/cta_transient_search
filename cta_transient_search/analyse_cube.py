@@ -32,7 +32,9 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
     size_bg_cube = n_slices_bg + gap_bg + 1
     queue_bg_sub = deque([])
     queue_denoised = deque([])
+    print('Start')
     slices_bg_start = background_start(cube[:n_slices_bg + gap_bg], n_slices_bg, gap_bg)
+    print('len start: {}'.format(len(slices_bg_start)))
     for s in slices_bg_start:
         queue_bg_sub.append(s)
 
