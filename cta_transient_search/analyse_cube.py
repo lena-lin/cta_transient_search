@@ -20,9 +20,11 @@ def background_start(cube, n_slices_bg, gap_bg):
     else:
         slices_bg = []
         for i in range(1, n_slices_bg + 1):
+            print('n_slices_bg: {}'.format(i))
             slices_bg.append(background_substraction(cube[:i + 1], n_slices_bg=i, gap_bg=0))
-        for i in range(1, gap_bg + 1):
-            slices_bg.append(background_substraction(cube[:n_slices_bg + i + 1], n_slices_bg, gap_bg=i))
+        for k in range(1, gap_bg + 1):
+            print('n_slices_bg: {}'.format(k))
+            slices_bg.append(background_substraction(cube[:n_slices_bg + k + 1], n_slices_bg, gap_bg=k))
 
         return slices_bg
 
