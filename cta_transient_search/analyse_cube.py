@@ -22,7 +22,7 @@ def background_start(cube, n_slices_bg, gap_bg):
         for i in range(1, n_slices_bg + 1):
             print('n_slices_bg: {}'.format(i))
             slices_bg.append(background_substraction(cube[:i + 1], n_slices_bg=i, gap_bg=0))
-        for k in range(1, gap_bg + 1):
+        for k in range(1, gap_bg):
             print('n_slices_bg: {}'.format(k))
             slices_bg.append(background_substraction(cube[:n_slices_bg + k + 1], n_slices_bg, gap_bg=k))
 
@@ -42,6 +42,7 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
 
     current_slice = n_slices_bg + gap_bg
     while(len(queue_bg_sub) < n_slices_wavelet):
+        print('len Q: {}, current_slice: {}'.format(len(queue_bg_sub), current_slice))
         queue_bg_sub.append(
                             background_substraction(
                                                     cube[(current_slice - size_bg_cube):(current_slice + 1)],
