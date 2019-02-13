@@ -97,6 +97,66 @@ def bgSubs_wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap, n_s
     return cube_liMa_S
 
 
+def wavelet3d_denoise_maxPixel(cube, n_slices_wavelet, n_slices_bg, gap_bg):
+    size_bg_cube = n_slices_bg + gap_bg + 1
+    queue_bg_sub = deque([])
+    queue_denoised = []
+    # print('Start')
+    slices_bg_start = background_start(cube[:n_slices_bg + gap_bg], n_slices_bg, gap_bg)
+    # print('len start: {}'.format(len(slices_bg_start)))
+    for s in slices_bg_start:
+        queue_bg_sub.append(s)
+
+    current_slice = n_slices_bg + gap_bg
+    while(len(queue_bg_sub) < n_slices_wavelet):
+        # print('len Q: {}, current_slice: {}'.format(len(queue_bg_sub), current_slice))
+        queue_bg_sub.append(
+                            background_substraction(
+                                                    cube[(current_slice - size_bg_cube + 1):(current_slice + 1)],
+                                                    n_slices_bg,
+                                                    gap_bg
+                                                    )
+                            )
+        current_slice += 1
+
+    coeffs_start = pywt.swtn(
+                    data=np.array(queue_bg_sub),
+                    wavelet='bior1.3',
+                    level=2,
+                    start_level=0
+                )
+
+    ct = thresholding_3d(coeffs_start, k=30)
+    start_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
+    for s in start_denoised:
+        queue_denoised.append(s)
+    # print('cube_start finished')
+
+    for i in range(current_slice, len(cube)):
+        queue_bg_sub.append(
+                            background_substraction(
+                                                    cube[(i - size_bg_cube + 1):(i + 1)],
+                                                    n_slices_bg,
+                                                    gap_bg
+                                                    )
+                            )
+        queue_bg_sub.popleft()
+
+        coeffs = pywt.swtn(
+                        data=np.array(queue_bg_sub),
+                        wavelet='bior1.3',
+                        level=2,
+                        start_level=0
+                    )
+
+        ct = thresholding_3d(coeffs, k=30)
+        slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
+
+        queue_denoised.append(slice_denoised)
+
+    return queue_denoised
+
+
 def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
     alpha = 1 / n_slices_off
     queue_denoised = deque([])
@@ -303,7 +363,7 @@ def main(
     if background == True:
         cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
-        cube_S = bgSubs_wavelet3d_denoise_lima(cube, 8, 5, 3, 3, 3)
+        cube_S = wavelet3d_denoise_maxPixel(cube, 8, 3, 3)
         pos_trigger_pixel = max_pixel_position(cube_S)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_S)
@@ -311,7 +371,7 @@ def main(
     else:
         print('signal')
         for cube in tqdm(cube_raw_table['cube']):
-            cube_S = bgSubs_wavelet3d_denoise_lima(cube, 8, 5, 3, 3, 3)
+            cube_S = wavelet3d_denoise_maxPixel(cube, 8, 3, 3)
             pos_trigger_pixel = max_pixel_position(cube_S)
 
             list_trigger_position.append(pos_trigger_pixel)
@@ -334,7 +394,7 @@ def main(
         num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = cube_raw_table.meta['time_per_slice']
         n_cubes = cube_raw_table.meta['n_cubes']
-        denoised_table.write('{}/n{}_s{}_t{}_bg_bgSubs_3dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_bg_bgSubs_3dwavelet_maxPixel_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -342,7 +402,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_bgSubs_3dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_bgSubs_3dwavelet_maxPixel_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -355,7 +415,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_bgSubs_3dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_bgSubs_3dwavelet_maxPixel_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -366,7 +426,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_bgSubs_3dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_bgSubs_3dwavelet_maxPixel_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
