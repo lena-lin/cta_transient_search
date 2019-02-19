@@ -5,7 +5,7 @@ from tqdm import tqdm
 from astropy.table import Table
 from ctawave.denoise import thresholding_3d, thresholding, remove_steady_background
 from collections import deque
-
+from scipy import special
 
 def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
     alpha = 1 / n_slices_off
@@ -135,6 +135,17 @@ def li_ma_significance(n_on, n_off, alpha=0.2):
     return significance
 
 
+def bayesian_significance(N_on, N_off, alpha):
+    N_all = N_on + N_off
+    gamma = (1 + 2 * N_off) * alpha**(0.5 + N_all) * special.gamma(0.5 + N_all)
+    delta = 2 * (1 + alpha)**N_all * special.gamma(1 + N_all) * special.hyp2f1(0.5 + N_off, 1 + N_all, 1.5 + N_off, -1/alpha)
+    c = np.sqrt(np.pi) / (2 * np.arctan(1/np.sqrt(alpha)))
+    P = gamma / (gamma + c * delta)
+    S_b = np.sqrt(2) * special.erfinv(1 - P)
+
+    return S_b
+
+
 def li_ma_benchmark(cube_raw, n_slices_off, gap):
     alpha = 1 / n_slices_off
     slices = []
@@ -142,6 +153,17 @@ def li_ma_benchmark(cube_raw, n_slices_off, gap):
         n_off = cube_raw[i:i + n_slices_off].sum(axis=0)
         n_on = cube_raw[i + n_slices_off + gap]
         slices.append(li_ma_significance(n_on, n_off, alpha=alpha))
+
+    return slices
+
+
+def bayesian_benchmark(cube_raw, n_slices_off, gap):
+    alpha = 1 / n_slices_off
+    slices = []
+    for i in range(len(cube_raw) - gap - n_slices_off):
+        n_off = cube_raw[i:i + n_slices_off].sum(axis=0)
+        n_on = cube_raw[i + n_slices_off + gap]
+        slices.append(bayesian_significance(n_on, n_off, alpha=alpha))
 
     return slices
 
