@@ -96,6 +96,17 @@ def li_ma_significance(n_on, n_off, alpha=0.2):
     return significance
 
 
+def bayesian_significance(N_on, N_off, alpha):
+    N_all = N_on + N_off
+    gamma = (1 + 2 * N_off) * alpha**(0.5 + N_all) * special.gamma(0.5 + N_all)
+    delta = 2 * (1 + alpha)**N_all * special.gamma(1 + N_all) * special.hyp2f1(0.5 + N_off, 1 + N_all, 1.5 + N_off, -1/alpha)
+    c = np.sqrt(np.pi) / (2 * np.arctan(1/np.sqrt(alpha)))
+    P = gamma / (gamma + c * delta)
+    S_b = np.sqrt(2) * special.erfinv(1 - P)
+
+    return S_b
+
+
 def li_ma_benchmark(cube_raw, n_slices_off, gap):
     alpha = 1 / n_slices_off
     slices = []
@@ -103,6 +114,17 @@ def li_ma_benchmark(cube_raw, n_slices_off, gap):
         n_off = cube_raw[i:i + n_slices_off].sum(axis=0)
         n_on = cube_raw[i + n_slices_off + gap]
         slices.append(li_ma_significance(n_on, n_off, alpha=alpha))
+
+    return slices
+
+
+def bayesian_benchmark(cube_raw, n_slices_off, gap):
+    alpha = 1 / n_slices_off
+    slices = []
+    for i in range(len(cube_raw) - gap - n_slices_off):
+        n_off = cube_raw[i:i + n_slices_off].sum(axis=0)
+        n_on = cube_raw[i + n_slices_off + gap]
+        slices.append(bayesian_significance(n_on, n_off, alpha=alpha))
 
     return slices
 
@@ -203,7 +225,7 @@ def main(
         num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = cube_raw_table.meta['time_per_slice']
         n_cubes = cube_raw_table.meta['n_cubes']
-        denoised_table.write('{}/n{}_s{}_t{}_bg_wavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_bg_2dwavelet_lima_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -211,7 +233,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_wavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_2dwavelet_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -224,7 +246,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_wavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_2dwavelet_lima_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -235,7 +257,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_wavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_2dwavelet_lima_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
