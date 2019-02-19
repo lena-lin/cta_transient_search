@@ -7,6 +7,45 @@ from ctawave.denoise import thresholding_3d, thresholding, remove_steady_backgro
 from collections import deque
 from scipy import special
 
+
+def wavelet3d_denoise_bayes(cube, n_slices_wavelet, n_slices_off, gap):
+    alpha = 1 / n_slices_off
+    queue_denoised = deque([])
+    coeffs_start = pywt.swtn(
+                    data=cube[:n_slices_wavelet],
+                    wavelet='bior1.3',
+                    level=2,
+                    start_level=0
+                )
+
+    ct = thresholding_3d(coeffs_start, k=30)
+    start_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')
+    for s in start_denoised:
+        queue_denoised.append(s)
+    # print('cube_start finished')
+    cube_Sb = []
+    for i in range(n_slices_wavelet, len(cube)):
+        coeffs = pywt.swtn(
+                        data=cube[i - n_slices_wavelet + 1:i + 1],
+                        wavelet='bior1.3',
+                        level=2,
+                        start_level=0
+                    )
+
+        ct = thresholding_3d(coeffs, k=30)
+        slice_denoised = pywt.iswtn(coeffs=ct, wavelet='bior1.3')[-1]
+
+        queue_denoised.append(slice_denoised)
+
+        if len(queue_denoised) > (n_slices_off + gap):
+            n_off = np.array(queue_denoised)[:n_slices_off].sum(axis=0)
+            n_on = slice_denoised
+            cube_Sb.append(bayesian_significance(n_on, n_off, alpha=alpha))
+
+            queue_denoised.popleft()
+
+    return cube_Sb
+
 def wavelet3d_denoise_lima(cube, n_slices_wavelet, n_slices_off, gap):
     alpha = 1 / n_slices_off
     queue_denoised = deque([])
@@ -235,7 +274,7 @@ def main(
     if background == True:
         cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
-        cube_S = wavelet3d_denoise_lima(cube, 8, 5, 3)
+        cube_S = wavelet3d_denoise_bayes(cube, 8, 5, 3)
         pos_trigger_pixel = max_pixel_position(cube_S)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_S)
@@ -243,7 +282,7 @@ def main(
     else:
         print('signal')
         for cube in tqdm(cube_raw_table['cube']):
-            cube_S = wavelet3d_denoise_lima(cube, 8, 5, 3)
+            cube_S = wavelet3d_denoise_bayes(cube, 8, 5, 3)
             pos_trigger_pixel = max_pixel_position(cube_S)
 
             list_trigger_position.append(pos_trigger_pixel)
@@ -266,7 +305,7 @@ def main(
         num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = cube_raw_table.meta['time_per_slice']
         n_cubes = cube_raw_table.meta['n_cubes']
-        denoised_table.write('{}/n{}_s{}_t{}_bg_3dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_bg_3dwavelet_Sb_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -274,7 +313,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_3dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_3dwavelet_Sb_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -287,7 +326,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_3dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_3dwavelet_Sb_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -298,7 +337,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_3dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_3dwavelet_Sb_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
