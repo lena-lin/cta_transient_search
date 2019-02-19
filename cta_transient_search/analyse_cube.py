@@ -7,10 +7,10 @@ from ctawave.denoise import thresholding_3d, thresholding, remove_steady_backgro
 from collections import deque
 
 
-def wavelet_denoise_lima(cube, n_slices_off, gap):
+def wavelet_denoise_Sb(cube, n_slices_off, gap):
     alpha = 1 / n_slices_off
     queue_denoised = deque([])
-    cube_liMa_S = []
+    cube_Sb = []
     for slice_raw in cube:
         coeffs = pywt.swt2(
             data=slice_raw,
@@ -25,11 +25,11 @@ def wavelet_denoise_lima(cube, n_slices_off, gap):
         if len(queue_denoised) == n_slices_off + gap + 1:
             n_off = np.array(queue_denoised)[:n_slices_off].sum(axis=0)
             n_on = slice_denoised
-            cube_liMa_S.append(li_ma_significance(n_on, n_off, alpha=alpha))
+            cube_Sb.append(bayesian_significance(n_on, n_off, alpha=alpha))
 
             queue_denoised.popleft()
 
-    return cube_liMa_S
+    return cube_Sb
 
 
 def wavelet_denoising_cube(
@@ -196,7 +196,7 @@ def main(
     if background == True:
         cube = cube_raw_table['cube'].data.reshape(-1, bins, bins)
         print('bg', cube.shape)
-        cube_S = wavelet_denoise_lima(cube, 5, 3)
+        cube_S = wavelet_denoise_Sb(cube, 5, 3)
         pos_trigger_pixel = max_pixel_position(cube_S)
         list_trigger_position.append(pos_trigger_pixel)
         list_cubes_denoised.append(cube_S)
@@ -204,7 +204,7 @@ def main(
     else:
         print('signal')
         for cube in tqdm(cube_raw_table['cube']):
-            cube_S = wavelet_denoise_lima(cube, 5, 3)
+            cube_S = wavelet_denoise_Sb(cube, 5, 3)
             pos_trigger_pixel = max_pixel_position(cube_S)
 
             list_trigger_position.append(pos_trigger_pixel)
@@ -225,7 +225,7 @@ def main(
         num_slices = cube_raw_table.meta['num_slices']  # in simulate_cube: 3*n_slices
         time_per_slice = cube_raw_table.meta['time_per_slice']
         n_cubes = cube_raw_table.meta['n_cubes']
-        denoised_table.write('{}/n{}_s{}_t{}_bg_2dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_bg_2dwavelet_Sb_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -233,7 +233,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_bg_2dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_bg_2dwavelet_Sb_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_cubes,
                                                                         num_slices,
@@ -246,7 +246,7 @@ def main(
         transient_template_filename = cube_raw_table.meta['template']
         cu_min = cube_raw_table.meta['min brightness in cu']
         z_trans = cube_raw_table.meta['redshift']
-        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_2dwavelet_lima_denoised.hdf5'.format(
+        denoised_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_2dwavelet_Sb_denoised.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
@@ -257,7 +257,7 @@ def main(
                                                                     ), path='data', overwrite=True)
 
         trans_factor_table.meta = denoised_table.meta
-        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_2dwavelet_lima_trigger.hdf5'.format(
+        trans_factor_table.write('{}/n{}_s{}_t{}_i{}_cu{}_z{}_2dwavelet_Sb_trigger.hdf5'.format(
                                                                         output_path,
                                                                         n_transient,
                                                                         num_slices,
