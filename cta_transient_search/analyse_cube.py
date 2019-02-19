@@ -5,6 +5,7 @@ from tqdm import tqdm
 from astropy.table import Table
 from ctawave.denoise import thresholding_3d, thresholding, remove_steady_background
 from collections import deque
+from scipy import special
 
 
 def wavelet_denoise_Sb(cube, n_slices_off, gap):
