@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm
 from astropy.table import Table
 from ctawave.denoise import thresholding_3d, remove_steady_background
+from scipy import special
 
 
 def wavelet_denoising_cube(
