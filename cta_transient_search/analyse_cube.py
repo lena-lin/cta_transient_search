@@ -118,7 +118,7 @@ def main(
         cube_smoothed = bgSubs_gaussian_smooth(cube, 5, 3)
         pos_trigger_pixel = max_pixel_position(cube_smoothed)
         list_trigger_position.append(pos_trigger_pixel)
-        list_cubes_denoised.append(cube_S)
+        list_cubes_denoised.append(cube_smoothed)
 
     else:
         print('signal')
